@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent" android:layout_height="fill_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:noHistory="true"
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <LinearLayout
+                android:id="@+id/suLayout"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:orientation="vertical"
+                android:visibility="visible">
+
+                <EditText
+                    android:id="@+id/suName"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="50.0dip"
+                    android:layout_marginTop="25.0dip"
+                    android:layout_marginEnd="50.0dip"
+                    android:ems="10"
+                    android:hint="Enter your full name"
+                    android:inputType="textPersonName"
+                    android:minHeight="48.0dip"
+                    android:paddingStart="20.0dip"
+                    android:paddingEnd="20.0dip" />
+
+                <EditText
+                    android:id="@+id/suEmail"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="50.0dip"
+                    android:layout_marginTop="20.0dip"
+                    android:layout_marginEnd="50.0dip"
+                    android:ems="10"
+                    android:hint="Enter your E-mail ID"
+                    android:inputType="textEmailAddress"
+                    android:minHeight="48.0dip"
+                    android:paddingStart="20.0dip"
+                    android:paddingEnd="20.0dip" />
+
+                <EditText
+                    android:id="@+id/suPhone"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="50.0dip"
+                    android:layout_marginTop="20.0dip"
+                    android:layout_marginEnd="50.0dip"
+                    android:ems="10"
+                    android:hint="Enter your phone number"
+                    android:inputType="phone"
+                    android:minHeight="48.0dip"
+                    android:paddingStart="20.0dip"
+                    android:paddingEnd="20.0dip" />
+
+                <TextView
+                    android:id="@+id/textView8"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="50.0dip"
+                    android:layout_marginTop="20.0dip"
+                    android:layout_marginEnd="50.0dip"
+                    android:paddingEnd="20.0dip"
+                    android:text="Choose your gender"
+                    android:textSize="20.0sp" />
+
+                <RadioGroup
+                    android:id="@+id/suGenderGroup"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="70.0dip"
+                    android:layout_marginTop="5.0dip"
+                    android:layout_marginEnd="70.0dip"
+                    android:orientation="horizontal">android:id="@+id/suGenderGroup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="50dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="50dp"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="20dp">
+
+                    <RadioButton
+                        android:id="@+id/radioButton3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="fill"
+                        android:layout_weight="1.0"
+                        android:text="Female" />
+
+                    <RadioButton
+                        android:id="@+id/radioButton2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="fill"
+                        android:layout_weight="1.0"
+                        android:text="Male" />
+
+                    <RadioButton
+                        android:id="@+id/radioButton4"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="fill"
+                        android:layout_weight="1.0"
+                        android:text="Others" />
+                </RadioGroup>
+
+                <TextView
+                    android:id="@+id/textView9"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="50.0dip"
+                    android:layout_marginTop="20.0dip"
+                    android:layout_marginEnd="50.0dip"
+                    android:text="Select your locality"
+                    android:textSize="20.0sp" />
+
+                <Spinner
+                    android:id="@+id/suRegion"
+                    android:layout_width="fill_parent"
+                    android:layout_height="48.0dip"
+                    android:layout_marginStart="100.0dip"
+                    android:layout_marginTop="5.0dip"
+                    android:layout_marginEnd="100.0dip"
+                    android:paddingTop="10.0dip"
+                    android:paddingEnd="10.0dip" />
+
+                <EditText
+                    android:id="@+id/suPassword1"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="50.0dip"
+                    android:layout_marginTop="20.0dip"
+                    android:layout_marginEnd="50.0dip"
+                    android:ems="10"
+                    android:hint="Enter your password"
+                    android:inputType="textPassword"
+                    android:minHeight="48.0dip"
+                    android:paddingStart="20.0dip"
+                    android:paddingEnd="20.0dip" />
+
+                <EditText
+                    android:id="@+id/suPassword2"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="50.0dip"
+                    android:layout_marginTop="20.0dip"
+                    android:layout_marginEnd="50.0dip"
+                    android:ems="10"
+                    android:hint="Re-enter the password"
+                    android:inputType="textPassword"
+                    android:minHeight="48.0dip"
+                    android:paddingStart="20.0dip"
+                    android:paddingEnd="20.0dip" />
+
+                <Button
+                    android:id="@+id/suButton"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="150.0dip"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginEnd="150.0dip"
+                    android:hint="Sign Up"
+                    android:text="Sign Up" />
+
+                <TextView
+                    android:id="@+id/textView7"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="0dp"
+                    android:gravity="center"
+                    android:minHeight="48.0dip"
+                    android:onClick="siIntent"
+                    android:text="Already have an account? Sign in" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <LinearLayout
+        android:id="@+id/suChooseLayout"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical"
+        android:padding="50.0dip"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/textView6"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20.0dip"
+            android:gravity="center"
+            android:padding="30.0dip"
+            android:text="Choose your Account Type"
+            android:textSize="30.0sp" />
+
+        <TextView
+            android:id="@+id/suTypeLU"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20.0dip"
+            android:layout_marginLeft="20.0dip"
+            android:layout_marginTop="60.0dip"
+            android:layout_marginEnd="20.0dip"
+            android:layout_marginRight="20.0dip"
+            android:layout_marginBottom="20.0dip"
+            android:gravity="center"
+            android:onClick="su"
+            android:padding="30.0dip"
+            android:tag="LU"
+            android:text="Local User"
+            android:textSize="20.0sp" />
+
+        <TextView
+            android:id="@+id/suTypeMLA"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20.0dip"
+            android:gravity="center"
+            android:onClick="su"
+            android:padding="30.0dip"
+            android:tag="MLAC"
+            android:text="MLA/Corporator"
+            android:textSize="20.0sp" />
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
