@@ -2,11 +2,12 @@ package com.sathvikks.epolitics;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.preference.PreferenceManager;
 import android.util.Base64;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -17,6 +18,8 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
@@ -27,23 +30,40 @@ import java.util.HashMap;
 
 public class Configs extends MainActivity {
     public static HashMap userObj = new HashMap();
-    private static Boolean success = false;
-    private static FirebaseAuth mAuth;
+    private  SharedPreferences sp;
+
+    /**
+     *
+     * @return DatabaseReference
+     */
     public static DatabaseReference getDbRef() {
         DatabaseReference dbRef = FirebaseDatabase.getInstance("https://epolitics-ecdb4-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference();
         return dbRef;
     }
 
+    /**
+     *
+     * @return FirebaseAuth
+     */
     public static FirebaseAuth getmAuth() {
-        mAuth = FirebaseAuth.getInstance();
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
         return mAuth;
     }
 
+    /**
+     *
+     * @return FirebaseUser
+     */
     public static FirebaseUser getUser() {
         FirebaseUser fUser = FirebaseAuth.getInstance().getCurrentUser();
         return fUser;
     }
 
+    /**
+     *
+     * @param mail email to replace dot with comma
+     * @return email with comma instead of dot
+     */
     public static String generateEmail(String mail) {
         return mail.replace('.', ',');
     }
@@ -80,9 +100,12 @@ public class Configs extends MainActivity {
 
     public static HashMap fetchUserInfo(Context context, Boolean force) {
         ProgressDialog dialog = Configs.showProcessDialogue(context, "Fetching your information");
-        dialog.show();
         if (userObj.isEmpty() || force == true) {
-            Log.i("sksLog", "Hashmap Empty");
+            dialog.show();
+            if (!force)
+                Log.i("sksLog", "Hashmap Empty");
+            else
+                Log.i("sksLog", "Hashmap forced");
             dbRef.child("users").child(Configs.generateEmail(Configs.getUser().getEmail())).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<DataSnapshot> task) {
@@ -91,14 +114,20 @@ public class Configs extends MainActivity {
                     } else {
                         userObj = (HashMap) task.getResult().getValue();
                     }
+                    dialog.dismiss();
                 }
             });
         } else
             Log.i("sksLog", "Hashmap not empty");
-        dialog.hide();
         return userObj;
     }
 
+    /**
+     *
+     * @param context context
+     * @param message message to be displayed
+     * @return returns the dialog object
+     */
     public static ProgressDialog showProcessDialogue(Context context, String message) {
         ProgressDialog dialog = new ProgressDialog(context);
         dialog.setMessage(message);
@@ -106,6 +135,12 @@ public class Configs extends MainActivity {
         dialog.setInverseBackgroundForced(false);
         return dialog;
     }
+
+    /**
+     *
+     * @param bitmap bitmap to be converted to string
+     * @return the string format of the bitmap
+     */
     public static String BitMapToString(Bitmap bitmap){
         ByteArrayOutputStream baos=new  ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG,100, baos);
@@ -114,7 +149,7 @@ public class Configs extends MainActivity {
         return temp;
     }
     /**
-     * @param encodedString
+     * @param encodedString string to be converted to bitmap
      * @return bitmap (from given string)
      */
     public static Bitmap StringToBitMap(String encodedString){
