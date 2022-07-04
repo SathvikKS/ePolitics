@@ -36,7 +36,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 
 public class MyProfile extends AppCompatActivity {
@@ -102,9 +104,7 @@ public class MyProfile extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 imageChooser();
-                dialog.setMessage("Uploading the image");
-                dialog.setCancelable(true);
-                dialog.setInverseBackgroundForced(false);
+                dialog = Configs.showProcessDialogue(MyProfile.this, "Uploading the image");
                 dialog.show();
             }
         });
@@ -129,6 +129,35 @@ public class MyProfile extends AppCompatActivity {
         profileUserRegion.setText(userRegion);
         if (userType.equals("MLAC")) {
             profileUserAuthorityLayout.setVisibility(View.GONE);
+        } else {
+            ProgressDialog dl = Configs.showProcessDialogue(this, "Fetching the list of authorities");
+            dl.show();
+            dbRef.child("users").get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                List authorities = new ArrayList();
+                @Override
+                public void onComplete(@NonNull Task<DataSnapshot> task) {
+                    if(!task.isSuccessful()) {
+                        dl.dismiss();
+                        return;
+                    }
+                    for (DataSnapshot ds: task.getResult().getChildren()) {
+                        String accType = (String) ds.child("accType").getValue();
+                        String region = (String) ds.child("region").getValue();
+                        assert accType != null;
+                        if (accType.equals("MLAC")) {
+                            assert region != null;
+                            if (region.equals(Configs.userObj.get("region"))) {
+                                authorities.add(ds.child("name").getValue().toString());
+                            }
+                        }
+                    }
+                    String authoritiesString = authorities.toString().replace("[", "")
+                            .replace("]", "");
+                    TextView profileUserAuthorities = findViewById(R.id.profileUserAuthorities);
+                    profileUserAuthorities.setText(authoritiesString);
+                    dl.dismiss();
+                }
+            });
         }
         if (userPic != null) {
             profileImage.setImageBitmap(Configs.StringToBitMap(userPic));
@@ -145,7 +174,6 @@ public class MyProfile extends AppCompatActivity {
                         e.printStackTrace();
                     }
                     profileImage.setImageBitmap(selectedImageBitmap);
-                    Log.i("sksLog", "bitmap: "+selectedImageBitmap.toString());
                     dbRef.child("users").child(Configs.generateEmail(userEmail)).child("profilePic").setValue(Configs.BitMapToString(selectedImageBitmap)).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
@@ -155,10 +183,10 @@ public class MyProfile extends AppCompatActivity {
                                 Toast.makeText(MyProfile.this, "Failed to upload profile picture", Toast.LENGTH_SHORT).show();
                                 Log.i("sksLog", "failed to upload the image: "+task.getException().toString());
                             }
-                            dialog.hide();
+                            dialog.dismiss();
+                            Configs.fetchUserInfo(MyProfile.this, true);
                         }
                     });
-                    Configs.fetchUserInfo(MyProfile.this, true);
                 }
             }
         });
