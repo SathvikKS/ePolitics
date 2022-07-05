@@ -48,20 +48,21 @@ public class SignIn extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView((int) R.layout.activity_sign_in);
         ((ActionBar) Objects.requireNonNull(getSupportActionBar())).setTitle((CharSequence) "Sign In");
-        this.forgotPassword = new Intent(getApplicationContext(), ForgotPassword.class);
-        this.signUp = new Intent(getApplicationContext(), SignUp.class);
-        this.mainActivity = new Intent(getApplicationContext(), MainActivity.class);
-        this.userEmail = (EditText) findViewById(R.id.siEmail);
-        this.userPassword = (EditText) findViewById(R.id.siPassword);
-        Button button = (Button) findViewById(R.id.siButton);
-        this.signIn = button;
-        button.setOnClickListener(new View.OnClickListener() {
+        forgotPassword = new Intent(getApplicationContext(), ForgotPassword.class);
+        signUp = new Intent(getApplicationContext(), SignUp.class);
+        mainActivity = new Intent(getApplicationContext(), MainActivity.class);
+        userEmail = (EditText) findViewById(R.id.siEmail);
+        userPassword = (EditText) findViewById(R.id.siPassword);
+        signIn = (Button) findViewById(R.id.siButton);
+        signIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                signIn.setClickable(false);
                 String email = userEmail.getText().toString();
                 String password = userPassword.getText().toString();
                 if (email.matches("") || password.matches("")) {
                     Toast.makeText(getApplicationContext(), "Please enter the credentials", Toast.LENGTH_SHORT).show();
+                    signIn.setClickable(true);
                 } else {
                     Configs.getmAuth().signInWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                         @Override
@@ -69,6 +70,7 @@ public class SignIn extends AppCompatActivity {
                             if (!task.isSuccessful()) {
                                 Log.i("sksLog", "signInWithEmail:failure", task.getException());
                                 Toast.makeText(getApplicationContext(), "Authentication failed.", Toast.LENGTH_SHORT).show();
+                                signIn.setClickable(true);
                             } else if (!Configs.getUser().isEmailVerified()) {
                                 new AlertDialog.Builder(SignIn.this)
                                         .setTitle("Verify Email")

@@ -88,6 +88,7 @@ public class SignUp extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "The passwords do not match", Toast.LENGTH_SHORT).show();
                     return;
                 }
+                suButton.setClickable(false);
                 Configs.getmAuth().createUserWithEmailAndPassword(suEmailText, suPassword1Text).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
@@ -113,11 +114,13 @@ public class SignUp extends AppCompatActivity {
                                                     Toast.makeText(getApplicationContext(), "Sign Up failed!", Toast.LENGTH_SHORT).show();
                                                 }
                                                 Log.i("sksLog", task.getException().toString());
+                                                suButton.setClickable(true);
                                             }
                                         });
                                     } else {
                                         Log.i("sksLog", "email verify error: " + Objects.requireNonNull(task.getException()));
                                     }
+                                    suButton.setClickable(true);
                                 }
                             });
                             return;
@@ -128,6 +131,7 @@ public class SignUp extends AppCompatActivity {
                         } else {
                             Toast.makeText(getApplicationContext(), "Sign Up failed!", Toast.LENGTH_SHORT).show();
                         }
+                        suButton.setClickable(true);
                     }
                 });
             }
