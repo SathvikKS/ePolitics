@@ -32,7 +32,6 @@ public class User {
                 ", name='" + name + '\'' +
                 ", phone='" + phone + '\'' +
                 ", region='" + region + '\'' +
-                ", profilePic=" + profilePic +
                 '}';
     }
 }
