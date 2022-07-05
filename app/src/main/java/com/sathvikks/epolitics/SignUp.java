@@ -96,7 +96,8 @@ public class SignUp extends AppCompatActivity {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
                                     if (task.isSuccessful()) {
-                                        userDb.child("users").child(myUser.replaceEmail()).setValue(myUser).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        Log.i("sksLog", "storing object: "+myUser);
+                                        userDb.child("users").child(Configs.generateEmail(suEmailText)).setValue(myUser).addOnCompleteListener(new OnCompleteListener<Void>() {
                                             @Override
                                             public void onComplete(@NonNull Task<Void> task) {
                                                 if (task.isSuccessful()) {
@@ -122,7 +123,7 @@ public class SignUp extends AppCompatActivity {
                             return;
                         }
                         Log.i("sksLog", "SignUP firebase failure: " + Objects.requireNonNull(task.getException()));
-                        if (task.getException().toString().matches(".*The email address is already in use by another account")) {
+                        if (task.getException().toString().matches(".*The email address is already in use by another account.*")) {
                             Toast.makeText(getApplicationContext(), "Sign Up failed! E-mail ID is already registered", Toast.LENGTH_SHORT).show();
                         } else {
                             Toast.makeText(getApplicationContext(), "Sign Up failed!", Toast.LENGTH_SHORT).show();
@@ -160,7 +161,7 @@ public class SignUp extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             suRegion.setAdapter(new ArrayAdapter<>(getApplication(), android.R.layout.simple_spinner_item, String.valueOf(task.getResult().getValue()).split(", ")));
                             Log.i("sksLog", "fetched the regions: " + task.getResult().toString());
-                            dialog.hide();
+                            dialog.dismiss();
                             return;
                         }
                         Log.i("sksLog", "retrieve regions error: " + Objects.requireNonNull(task.getException()));

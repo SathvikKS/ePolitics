@@ -5,13 +5,13 @@ import android.graphics.Bitmap;
 import com.google.firebase.database.Exclude;
 
 public class User {
-    private String accType;
-    private String email;
-    private String gender;
-    private String name;
-    private String phone;
-    private String region;
-    private Bitmap profilePic;
+    public String accType;
+    public String email;
+    public String gender;
+    public String name;
+    public String phone;
+    public String region;
+    public Bitmap profilePic;
 
     public User(String email2, String phone2, String name2, String accType2, String gender2, String region2) {
         email = email2;
@@ -23,11 +23,16 @@ public class User {
         profilePic = null;
     }
 
-    public String replaceEmail() {
-        return email.replace('.', ',');
-    }
-
-    public long getPhone() {
-        return Long.parseLong(this.phone);
+    @Override
+    public String toString() {
+        return "User{" +
+                "accType='" + accType + '\'' +
+                ", email='" + email + '\'' +
+                ", gender='" + gender + '\'' +
+                ", name='" + name + '\'' +
+                ", phone='" + phone + '\'' +
+                ", region='" + region + '\'' +
+                ", profilePic=" + profilePic +
+                '}';
     }
 }

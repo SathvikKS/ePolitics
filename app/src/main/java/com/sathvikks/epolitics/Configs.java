@@ -113,6 +113,7 @@ public class Configs extends MainActivity {
                         Log.i("sksLog", "unable to fetch user info\n" + task.getException().toString());
                     } else {
                         userObj = (HashMap) task.getResult().getValue();
+                        Log.i("sksLog", "fetched info:\n"+String.valueOf(task.getResult().getValue()));
                     }
                     dialog.dismiss();
                 }
@@ -145,8 +146,7 @@ public class Configs extends MainActivity {
         ByteArrayOutputStream baos=new  ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG,100, baos);
         byte [] b=baos.toByteArray();
-        String temp= Base64.encodeToString(b, Base64.DEFAULT);
-        return temp;
+        return Base64.encodeToString(b, Base64.DEFAULT);
     }
     /**
      * @param encodedString string to be converted to bitmap
@@ -155,8 +155,7 @@ public class Configs extends MainActivity {
     public static Bitmap StringToBitMap(String encodedString){
         try {
             byte [] encodeByte=Base64.decode(encodedString,Base64.DEFAULT);
-            Bitmap bitmap= BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length);
-            return bitmap;
+            return BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length);
         } catch(Exception e) {
             e.getMessage();
             return null;

@@ -114,7 +114,7 @@ public class MyProfile extends AppCompatActivity {
             userName = (String) userObj.get("name");
             userEmail = (String) userObj.get("email");
             userGender = (String) userObj.get("gender");
-            userPhone = (String) String.valueOf(userObj.get("phone"));
+            userPhone = String.valueOf(userObj.get("phone"));
             userRegion = (String) userObj.get("region");
             userType = (String) userObj.get("accType");
             userPic = (String) userObj.get("profilePic");
@@ -127,6 +127,7 @@ public class MyProfile extends AppCompatActivity {
         profileUserGender.setText(userGender);
         profileUserPhone.setText(userPhone);
         profileUserRegion.setText(userRegion);
+        Log.i("sksLog", "userType "+userType);
         if (userType.equals("MLAC")) {
             profileUserAuthorityLayout.setVisibility(View.GONE);
         } else {
