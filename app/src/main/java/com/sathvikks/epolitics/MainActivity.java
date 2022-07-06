@@ -1,13 +1,13 @@
 package com.sathvikks.epolitics;
 
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -15,16 +15,21 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 
+import java.util.HashMap;
 import java.util.Objects;
 
-public class MainActivity extends AppCompatActivity {
-    static DatabaseReference dbRef;
-    static FirebaseAuth mAuth;
+public class MainActivity extends AppCompatActivity{
+    DatabaseReference dbRef;
+    FirebaseAuth mAuth;
     Intent siIntent;
-    ProgressDialog dialog;
+    HashMap userObj;
+    FloatingActionButton newPostButton;
+    String accType;
+
     @Override
     public void onStart() {
         super.onStart();
@@ -72,7 +77,31 @@ public class MainActivity extends AppCompatActivity {
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .show();
         } else {
-            Configs.fetchUserInfo(this, false);
+            accType = Configs.getAccountType(this);
+            userObj = Configs.fetchUserInfo(this, false);
+            UpdateAccType uat = new UpdateAccType();
+            uat.setListener(new myListener() {
+                @Override
+                public void onAccTypeUpdate(String accType) {
+                    if (accType.equals("MLAC")) {
+                        newPostButton.setVisibility(View.VISIBLE);
+                        Toast.makeText(MainActivity.this, "Welcome MLAC", Toast.LENGTH_SHORT).show();
+                    }
+                    else if (accType.equals("LU")) {
+
+                        Toast.makeText(MainActivity.this, "Welcome LU", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+            if (accType == null)
+                uat.fetchAccType(this);
+            else if (accType.equals("MLAC")) {
+                newPostButton.setVisibility(View.VISIBLE);
+                Toast.makeText(MainActivity.this, "Welcome MLAC stored", Toast.LENGTH_SHORT).show();
+            }
+            else if (accType.equals("LU")) {
+                Toast.makeText(MainActivity.this, "Welcome LU stored", Toast.LENGTH_SHORT).show();
+            }
         }
     }
     @Override
@@ -85,9 +114,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView((int) R.layout.activity_main);
         mAuth = Configs.getmAuth();
-        this.siIntent = new Intent(getApplicationContext(), SignIn.class);
+        siIntent = new Intent(getApplicationContext(), SignIn.class);
         dbRef = Configs.getDbRef();
-        dialog = new ProgressDialog(this);
+        newPostButton = findViewById(R.id.newPostButton);
+        newPostButton.setVisibility(View.GONE);
+        newPostButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(MainActivity.this, "hello", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -99,6 +135,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.menuSignOut:
                 mAuth.signOut();
                 Configs.userObj.clear();
+                Configs.delAccountType(this);
                 startActivity(this.siIntent);
                 finish();
                 return true;
@@ -106,4 +143,5 @@ public class MainActivity extends AppCompatActivity {
                 return false;
         }
     }
+
 }

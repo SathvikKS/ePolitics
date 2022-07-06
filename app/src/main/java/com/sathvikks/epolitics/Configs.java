@@ -28,16 +28,17 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 
-public class Configs extends MainActivity {
+public class Configs {
     public static HashMap userObj = new HashMap();
-    private  SharedPreferences sp;
+    public static SharedPreferences sp;
+    static ProgressDialog dialog;
 
     /**
      *
      * @return DatabaseReference
      */
     public static DatabaseReference getDbRef() {
-        DatabaseReference dbRef = FirebaseDatabase.getInstance("https://epolitics-ecdb4-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference();
+        DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
         return dbRef;
     }
 
@@ -68,8 +69,7 @@ public class Configs extends MainActivity {
         return mail.replace('.', ',');
     }
 
-    public void appendLog(String text)
-    {
+    public void appendLog(String text) {
         File logFile = new File("sdcard/ePolitics.txt");
         if (!logFile.exists())
         {
@@ -99,8 +99,9 @@ public class Configs extends MainActivity {
     }
 
     public static HashMap fetchUserInfo(Context context, Boolean force) {
-        ProgressDialog dialog = Configs.showProcessDialogue(context, "Fetching your information");
-        if (userObj.isEmpty() || force == true) {
+        DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
+        dialog = Configs.showProcessDialogue(context, "Fetching your information");
+        if (userObj.isEmpty() || force) {
             dialog.show();
             if (!force)
                 Log.i("sksLog", "Hashmap Empty");
@@ -113,7 +114,7 @@ public class Configs extends MainActivity {
                         Log.i("sksLog", "unable to fetch user info\n" + task.getException().toString());
                     } else {
                         userObj = (HashMap) task.getResult().getValue();
-                        Log.i("sksLog", "fetched info:\n"+String.valueOf(task.getResult().getValue()));
+                        Log.i("sksLog", "fetched info:\n");
                     }
                     dialog.dismiss();
                 }
@@ -142,17 +143,18 @@ public class Configs extends MainActivity {
      * @param bitmap bitmap to be converted to string
      * @return the string format of the bitmap
      */
-    public static String BitMapToString(Bitmap bitmap){
+    public static String BitMapToString(Bitmap bitmap) {
         ByteArrayOutputStream baos=new  ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG,100, baos);
         byte [] b=baos.toByteArray();
         return Base64.encodeToString(b, Base64.DEFAULT);
     }
+
     /**
      * @param encodedString string to be converted to bitmap
      * @return bitmap (from given string)
      */
-    public static Bitmap StringToBitMap(String encodedString){
+    public static Bitmap StringToBitMap(String encodedString) {
         try {
             byte [] encodeByte=Base64.decode(encodedString,Base64.DEFAULT);
             return BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length);
@@ -160,5 +162,34 @@ public class Configs extends MainActivity {
             e.getMessage();
             return null;
         }
+    }
+
+    /**
+     *
+     * @param context this
+     * @return accType
+     */
+    public static String getAccountType(Context context){
+        sp = context.getSharedPreferences("com.sathvikks.epolitics", Context.MODE_PRIVATE);
+        return sp.getString("accType", null);
+    }
+
+    /**
+     *
+     * @param context this
+     * @param accType Account Type
+     */
+    public static void setAccountType(Context context, String accType) {
+        sp = context.getSharedPreferences("com.sathvikks.epolitics", Context.MODE_PRIVATE);
+        sp.edit().putString("accType", accType).apply();
+    }
+
+    /**
+     *
+     * @param context this
+     */
+    public static void delAccountType(Context context) {
+        sp = context.getSharedPreferences("com.sathvikks.epolitics", Context.MODE_PRIVATE);
+        sp.edit().remove("accType").apply();
     }
 }
