@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.preference.PreferenceManager;
 import android.util.Base64;
 import android.util.Log;
@@ -12,12 +13,17 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FileDownloadTask;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -27,21 +33,26 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
+
 
 public class Configs {
-    public static HashMap userObj = new HashMap();
+    public static HashMap<String, Object> userObj = new HashMap<>();
     public static SharedPreferences sp;
     static ProgressDialog dialog;
+    static DownloadImage di;
 
     /**
      *
      * @return DatabaseReference
      */
     public static DatabaseReference getDbRef() {
-        DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
-        return dbRef;
+        return FirebaseDatabase.getInstance().getReference();
     }
 
+    public static StorageReference getStorageRef() {
+        return FirebaseStorage.getInstance().getReference();
+    }
     /**
      *
      * @return FirebaseAuth
@@ -101,6 +112,7 @@ public class Configs {
     public static HashMap fetchUserInfo(Context context, Boolean force) {
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
         dialog = Configs.showProcessDialogue(context, "Fetching your information");
+        dialog.setProgress(0);
         if (userObj.isEmpty() || force) {
             dialog.show();
             if (!force)
@@ -114,9 +126,44 @@ public class Configs {
                         Log.i("sksLog", "unable to fetch user info\n" + task.getException().toString());
                     } else {
                         userObj = (HashMap) task.getResult().getValue();
-                        Log.i("sksLog", "fetched info:\n");
+                        Log.i("sksLog", "fetched info:\n"+task.getResult().getValue().toString());
+                        if (getAccountType(context) == null) {
+                            MainActivity.uat.fetchAccType((String) userObj.get("accType"));
+                            Configs.setAccountType(context, (String) userObj.get("accType"));
+                        }
+
+                        if (userObj.get("profilePicUrl") != null) {
+                            dialog.dismiss();
+                            dialog.setMessage("Downloading profile picture");
+                            dialog.show();
+                            Log.i("sksLog", "profile picture url is: "+userObj.get("profilePicUrl"));
+                            StorageReference dpRef = FirebaseStorage.getInstance().getReferenceFromUrl((String) userObj.get("profilePicUrl"));
+                            try {
+                                File localFile = File.createTempFile("images", "jpg");
+                                dpRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                                    @Override
+                                    public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                        Bitmap bitmap = BitmapFactory.decodeFile(localFile.getAbsolutePath());
+                                        Configs.userObj.put("profilePic", new BitmapDrawable(context.getResources(), bitmap));
+                                        dialog.dismiss();
+                                    }
+                                }).addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception exception) {
+                                        dialog.dismiss();
+                                        Log.i("sksLog", "unable to download picture: "+exception.toString());
+                                    }
+                                });
+                            } catch (IOException e) {
+                                dialog.dismiss();
+                                e.printStackTrace();
+                            }
+                        } else {
+                            dialog.dismiss();
+                        }
+
                     }
-                    dialog.dismiss();
+
                 }
             });
         } else

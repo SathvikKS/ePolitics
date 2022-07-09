@@ -4,6 +4,8 @@ import android.graphics.Bitmap;
 
 import com.google.firebase.database.Exclude;
 
+import java.net.URL;
+
 public class User {
     public String accType;
     public String email;
@@ -11,6 +13,7 @@ public class User {
     public String name;
     public String phone;
     public String region;
+    public URL profilePicUrl;
     public Bitmap profilePic;
 
     public User(String email2, String phone2, String name2, String accType2, String gender2, String region2) {
@@ -20,6 +23,7 @@ public class User {
         accType = accType2;
         gender = gender2;
         region = region2;
+        profilePicUrl = null;
         profilePic = null;
     }
 
@@ -32,6 +36,7 @@ public class User {
                 ", name='" + name + '\'' +
                 ", phone='" + phone + '\'' +
                 ", region='" + region + '\'' +
+                ", profilePicUrl=" + profilePicUrl +
                 '}';
     }
 }

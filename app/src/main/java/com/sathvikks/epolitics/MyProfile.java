@@ -10,9 +10,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -30,7 +34,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
@@ -40,19 +47,32 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FileDownloadTask;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnPausedListener;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.time.Instant;
+import java.time.temporal.TemporalAdjuster;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
+
 public class MyProfile extends AppCompatActivity {
-    String userName, userEmail, userPhone, userRegion, userType, userGender, userPic, reEnterPassword;
+    StorageReference storageRef;
+    String userName, userEmail, userPhone, userRegion, userType, userGender, userPicUrl, reEnterPassword;
     ProgressDialog dialog;
-    Bitmap selectedImageBitmap;
+    Bitmap selectedImageBitmap, profilePicBitmap;
     ImageView profileImage;
     TextView profileUserName, profileUserEmail, profileUserPhone, profileUserRegion, profileUserGender, profileUserAuthority;
     Button profileEditImage, profileRemoveImage, profileUserDelete;
@@ -62,6 +82,7 @@ public class MyProfile extends AppCompatActivity {
     FirebaseUser myUser;
     Intent siIntent;
     HashMap userObj;
+
     private void imageChooser()
     {
         Intent i = new Intent();
@@ -75,6 +96,7 @@ public class MyProfile extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_profile);
         ((ActionBar) Objects.requireNonNull(getSupportActionBar())).setTitle((CharSequence) "My Profile");
+        storageRef = Configs.getStorageRef();
         dialog = new ProgressDialog(MyProfile.this);
         profileEditImage = findViewById(R.id.profileEditImage);
         profileRemoveImage = findViewById(R.id.profileRemoveImage);
@@ -114,7 +136,9 @@ public class MyProfile extends AppCompatActivity {
             public void onClick(View view) {
                 imageChooser();
                 dialog = Configs.showProcessDialogue(MyProfile.this, "Uploading the image");
-                dialog.show();
+                dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                dialog.setIndeterminate(false);
+                dialog.setProgress(0);
             }
         });
         userObj = Configs.fetchUserInfo(MyProfile.this, false);
@@ -125,7 +149,8 @@ public class MyProfile extends AppCompatActivity {
             userPhone = String.valueOf(userObj.get("phone"));
             userRegion = (String) userObj.get("region");
             userType = (String) userObj.get("accType");
-            userPic = (String) userObj.get("profilePic");
+            userPicUrl = (String) userObj.get("profilePicUrl");
+            profilePicBitmap = (Bitmap) ((BitmapDrawable) userObj.get("profilePic")).getBitmap();
         } catch (Exception e) {
             Log.i("sksLog", "unable to parse json:\n"+e.toString());
             return;
@@ -135,10 +160,10 @@ public class MyProfile extends AppCompatActivity {
         profileUserGender.setText(userGender);
         profileUserPhone.setText(userPhone);
         profileUserRegion.setText(userRegion);
-        Log.i("sksLog", "userType "+userType);
         if (userType.equals("MLAC")) {
             profileUserAuthorityLayout.setVisibility(View.GONE);
-        } else {
+        }
+        else {
             ProgressDialog dl = Configs.showProcessDialogue(this, "Fetching the list of authorities");
             dl.show();
             dbRef.child("users").get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
@@ -168,8 +193,9 @@ public class MyProfile extends AppCompatActivity {
                 }
             });
         }
-        if (userPic != null) {
-            profileImage.setImageBitmap(Configs.StringToBitMap(userPic));
+        if (profilePicBitmap != null) {
+            profileImage.setImageBitmap(profilePicBitmap);
+
         }
         launchSomeActivity =  registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
             if (result.getResultCode() == Activity.RESULT_OK) {
@@ -182,18 +208,53 @@ public class MyProfile extends AppCompatActivity {
                     catch (IOException e) {
                         e.printStackTrace();
                     }
+                    dialog.show();
                     profileImage.setImageBitmap(selectedImageBitmap);
-                    dbRef.child("users").child(Configs.generateEmail(userEmail)).child("profilePic").setValue(Configs.BitMapToString(selectedImageBitmap)).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    selectedImageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                    byte[] bitmapData = baos.toByteArray();
+                    StorageReference ref = storageRef.child("profile/"+myUser.getEmail());
+                    UploadTask uploadTask = ref.putBytes(bitmapData);
+                    uploadTask.addOnFailureListener(new OnFailureListener() {
                         @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            if (task.isSuccessful()) {
-                                Toast.makeText(MyProfile.this, "Profile picture has been uploaded", Toast.LENGTH_SHORT).show();
-                            } else {
-                                Toast.makeText(MyProfile.this, "Failed to upload profile picture", Toast.LENGTH_SHORT).show();
-                                Log.i("sksLog", "failed to upload the image: "+task.getException().toString());
-                            }
+                        public void onFailure(@NonNull Exception e) {
                             dialog.dismiss();
-                            Configs.fetchUserInfo(MyProfile.this, true);
+                            Toast.makeText(MyProfile.this, "Failed to upload profile picture", Toast.LENGTH_SHORT).show();
+                        }
+                    }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            dialog.dismiss();
+                            Toast.makeText(MyProfile.this, "Profile picture uploaded", Toast.LENGTH_SHORT).show();
+                            Configs.userObj.put("profilePic", new BitmapDrawable(getResources(), selectedImageBitmap));
+                        }
+                    });
+                    Task<Uri> urlTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                        @Override
+                        public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                            if (!task.isSuccessful()) {
+                                throw task.getException();
+                            }
+                            return ref.getDownloadUrl();
+                        }
+                    }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Uri> task) {
+                            if (task.isSuccessful()) {
+                                Uri downloadUri = task.getResult();
+                                dbRef.child("users").child(Configs.generateEmail(userEmail)).child("profilePicUrl").setValue(downloadUri.toString());
+                                Log.i("sksLog", "image url: "+downloadUri.toString());
+                            } else {
+                            }
+                        }
+                    });
+                    uploadTask.addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                            dialog.setMax((int) taskSnapshot.getTotalByteCount()/1024);
+                            double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
+                            dialog.setProgress((int)taskSnapshot.getBytesTransferred()/1024);
+                            Log.d("sksLog", "Upload is " + progress + "% done");
                         }
                     });
                 }

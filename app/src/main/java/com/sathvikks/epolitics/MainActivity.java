@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity{
+    public static UpdateAccType uat;
     DatabaseReference dbRef;
     FirebaseAuth mAuth;
     Intent siIntent;
@@ -79,7 +80,6 @@ public class MainActivity extends AppCompatActivity{
         } else {
             accType = Configs.getAccountType(this);
             userObj = Configs.fetchUserInfo(this, false);
-            UpdateAccType uat = new UpdateAccType();
             uat.setListener(new myListener() {
                 @Override
                 public void onAccTypeUpdate(String accType) {
@@ -93,13 +93,12 @@ public class MainActivity extends AppCompatActivity{
                     }
                 }
             });
-            if (accType == null)
-                uat.fetchAccType(this);
+            if (accType == null) {}
             else if (accType.equals("MLAC")) {
                 newPostButton.setVisibility(View.VISIBLE);
                 Toast.makeText(MainActivity.this, "Welcome MLAC stored", Toast.LENGTH_SHORT).show();
-            }
-            else if (accType.equals("LU")) {
+            } else if (accType.equals("LU")) {
+                newPostButton.setVisibility(View.GONE);
                 Toast.makeText(MainActivity.this, "Welcome LU stored", Toast.LENGTH_SHORT).show();
             }
         }
@@ -113,6 +112,7 @@ public class MainActivity extends AppCompatActivity{
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView((int) R.layout.activity_main);
+        uat = new UpdateAccType();
         mAuth = Configs.getmAuth();
         siIntent = new Intent(getApplicationContext(), SignIn.class);
         dbRef = Configs.getDbRef();
