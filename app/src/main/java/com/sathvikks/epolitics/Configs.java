@@ -23,6 +23,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -134,7 +135,10 @@ public class Configs {
 
                         if (userObj.get("profilePicUrl") != null) {
                             dialog.dismiss();
-                            dialog.setMessage("Downloading profile picture");
+                            dialog = Configs.showProcessDialogue(context, "Downloading profile picture");
+                            dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                            dialog.setIndeterminate(false);
+                            dialog.setProgress(0);
                             dialog.show();
                             Log.i("sksLog", "profile picture url is: "+userObj.get("profilePicUrl"));
                             StorageReference dpRef = FirebaseStorage.getInstance().getReferenceFromUrl((String) userObj.get("profilePicUrl"));
@@ -153,7 +157,17 @@ public class Configs {
                                         dialog.dismiss();
                                         Log.i("sksLog", "unable to download picture: "+exception.toString());
                                     }
-                                });
+                                })
+                                        .addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
+                                            @Override
+                                            public void onProgress(@NonNull FileDownloadTask.TaskSnapshot snapshot) {
+                                                dialog.setProgress((int) snapshot.getBytesTransferred()/1024);
+                                                if ((int) snapshot.getTotalByteCount() > 0)
+                                                    dialog.setMax((int) snapshot.getTotalByteCount()/1024);
+                                                double progress = (100.0 * snapshot.getBytesTransferred()) / snapshot.getTotalByteCount();
+                                                Log.d("sksLog", "Download is " + progress + "% done");
+                                            }
+                                        });
                             } catch (IOException e) {
                                 dialog.dismiss();
                                 e.printStackTrace();
