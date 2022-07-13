@@ -13,6 +13,8 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.AssetFileDescriptor;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
@@ -83,8 +85,7 @@ public class MyProfile extends AppCompatActivity {
     Intent siIntent;
     HashMap userObj;
 
-    private void imageChooser()
-    {
+    private void imageChooser() {
         Intent i = new Intent();
         i.setType("image/*");
         i.setAction(Intent.ACTION_GET_CONTENT);
@@ -116,12 +117,14 @@ public class MyProfile extends AppCompatActivity {
         profileRemoveImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                dbRef.child("users").child(Configs.generateEmail(mAuth.getCurrentUser().getEmail())).child("profilePic").setValue(null).addOnCompleteListener(new OnCompleteListener<Void>() {
+                dbRef.child("users").child(Configs.generateEmail(mAuth.getCurrentUser().getEmail())).child("profilePicUrl").setValue(null).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
                             Configs.fetchUserInfo(MyProfile.this, true);
+                            Configs.removeProfilePic(MyProfile.this);
                             Toast.makeText(MyProfile.this, "Profile picture has been removed", Toast.LENGTH_SHORT).show();
+                            Configs.removeProfilePic(MyProfile.this);
                             profileImage.setImageDrawable(null);
                         } else {
                             Toast.makeText(MyProfile.this, "Unable to remove profile picture", Toast.LENGTH_SHORT).show();
@@ -150,7 +153,8 @@ public class MyProfile extends AppCompatActivity {
             userRegion = (String) userObj.get("region");
             userType = (String) userObj.get("accType");
             userPicUrl = (String) userObj.get("profilePicUrl");
-            profilePicBitmap = (Bitmap) ((BitmapDrawable) userObj.get("profilePic")).getBitmap();
+            if (userPicUrl != null || userObj.get("profilePic") != null )
+                profilePicBitmap = (Bitmap) ((BitmapDrawable) userObj.get("profilePic")).getBitmap();
         } catch (Exception e) {
             Log.i("sksLog", "unable to parse json:\n"+e.toString());
             return;
@@ -195,15 +199,16 @@ public class MyProfile extends AppCompatActivity {
         }
         if (profilePicBitmap != null) {
             profileImage.setImageBitmap(profilePicBitmap);
-
         }
         launchSomeActivity =  registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+
             if (result.getResultCode() == Activity.RESULT_OK) {
                 Intent data = result.getData();
                 if (data != null && data.getData() != null) {
                     Uri selectedImageUri = data.getData();
                     try {
                         selectedImageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(),selectedImageUri);
+                        selectedImageBitmap = Configs.getResizedBitmap(selectedImageBitmap, 25);
                     }
                     catch (IOException e) {
                         e.printStackTrace();
@@ -227,6 +232,7 @@ public class MyProfile extends AppCompatActivity {
                             dialog.dismiss();
                             Toast.makeText(MyProfile.this, "Profile picture uploaded", Toast.LENGTH_SHORT).show();
                             Configs.userObj.put("profilePic", new BitmapDrawable(getResources(), selectedImageBitmap));
+                            Configs.storeProfilePic(selectedImageBitmap, MyProfile.this);
                         }
                     });
                     Task<Uri> urlTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {

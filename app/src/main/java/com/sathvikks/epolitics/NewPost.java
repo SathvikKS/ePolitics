@@ -110,6 +110,7 @@ public class NewPost extends AppCompatActivity {
                         dialog.setProgress(0);
                         dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
                         dialog.show();
+                        selectedImageBitmap = Configs.getResizedBitmap(selectedImageBitmap, 40);
                         selectedImageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                         byte[] bitmapData = baos.toByteArray();
                         StorageReference ref = storageRef.child("posts/"+userObj.get("region")+"/"+postChild);
