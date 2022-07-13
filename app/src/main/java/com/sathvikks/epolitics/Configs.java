@@ -41,7 +41,7 @@ public class Configs {
     static ProgressDialog dialog;
 
     /**
-     *
+     * returns database reference object
      * @return DatabaseReference
      */
     public static DatabaseReference getDbRef() {
@@ -49,14 +49,14 @@ public class Configs {
     }
 
     /**
-     *
+     * returns storage reference object
      * @return StorageReference - storageRef
      */
     public static StorageReference getStorageRef() {
         return FirebaseStorage.getInstance().getReference();
     }
     /**
-     *
+     * returns the firebase authentication object
      * @return FirebaseAuth
      */
     public static FirebaseAuth getmAuth() {
@@ -64,7 +64,7 @@ public class Configs {
     }
 
     /**
-     *
+     * returns the firebase user object
      * @return FirebaseUser
      */
     public static FirebaseUser getUser() {
@@ -72,7 +72,7 @@ public class Configs {
     }
 
     /**
-     *
+     * replace '.' with '', from the email
      * @param mail email to replace dot with comma
      * @return email with comma instead of dot
      */
@@ -80,37 +80,8 @@ public class Configs {
         return mail.replace('.', ',');
     }
 
-    public void appendLog(String text) {
-        File logFile = new File("sdcard/ePolitics.txt");
-        if (!logFile.exists())
-        {
-            try
-            {
-                logFile.createNewFile();
-            }
-            catch (IOException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-        try
-        {
-            //BufferedWriter for performance, true to set append to file flag
-            BufferedWriter buf = new BufferedWriter(new FileWriter(logFile, true));
-            buf.append(text);
-            buf.newLine();
-            buf.close();
-        }
-        catch (IOException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-
     /**
-     *
+     * fetch the information about the user logged in into a hashmap
      * @param context this
      * @param force force fetch user info
      * @return userObj hashmap
@@ -216,7 +187,7 @@ public class Configs {
     }
 
     /**
-     *
+     * show a progress dialogue
      * @param context this
      * @param message message to be displayed
      * @return returns the dialog object
@@ -230,7 +201,7 @@ public class Configs {
     }
 
     /**
-     *
+     * covert bitmap to base64 string
      * @param bitmap bitmap to be converted to string
      * @return the string format of the bitmap
      */
@@ -242,6 +213,7 @@ public class Configs {
     }
 
     /**
+     * extract bitmap from base64
      * @param encodedString string to be converted to bitmap
      * @return bitmap (from given string)
      */
@@ -256,7 +228,7 @@ public class Configs {
     }
 
     /**
-     *
+     * get the account type of the user logged in
      * @param context this
      * @return accType
      */
@@ -266,7 +238,7 @@ public class Configs {
     }
 
     /**
-     *
+     * store the account type of the user in shared preferences
      * @param context this
      * @param accType Account Type
      */
@@ -276,7 +248,7 @@ public class Configs {
     }
 
     /**
-     *
+     * delete the account type stored in shared preferences
      * @param context this
      */
     public static void delAccountType(Context context) {
