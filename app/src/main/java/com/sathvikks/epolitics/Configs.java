@@ -25,10 +25,8 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 
-import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Objects;
@@ -55,6 +53,16 @@ public class Configs {
     public static StorageReference getStorageRef() {
         return FirebaseStorage.getInstance().getReference();
     }
+
+    /**
+     * return storage reference from url
+     * @param url url
+     * @return StorageReference - storageRef
+     */
+    public static StorageReference getStorageRef(String url){
+        return FirebaseStorage.getInstance().getReferenceFromUrl(url);
+    }
+
     /**
      * returns the firebase authentication object
      * @return FirebaseAuth
@@ -119,7 +127,8 @@ public class Configs {
                                 dialog.setProgress(0);
                                 dialog.show();
                                 Log.i("sksLog", "profile picture url is: "+userObj.get("profilePicUrl"));
-                                StorageReference dpRef = FirebaseStorage.getInstance().getReferenceFromUrl((String) Objects.requireNonNull(userObj.get("profilePicUrl")));
+                                StorageReference dpRef = Configs.getStorageRef((String) userObj.get("profilePicUrl"));
+                                //StorageReference dpRef = FirebaseStorage.getInstance().getReferenceFromUrl((String) Objects.requireNonNull(userObj.get("profilePicUrl")));
                                 try {
                                     File localFile = File.createTempFile("images", "jpg");
                                     dpRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
