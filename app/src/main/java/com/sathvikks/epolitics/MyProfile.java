@@ -121,6 +121,8 @@ public class MyProfile extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
+                            StorageReference picRef = Configs.getStorageRef((String) userObj.get("profilePicUrl"));
+                            picRef.delete();
                             Configs.fetchUserInfo(MyProfile.this, true);
                             Configs.removeProfilePic(MyProfile.this);
                             Toast.makeText(MyProfile.this, "Profile picture has been removed", Toast.LENGTH_SHORT).show();
@@ -316,6 +318,7 @@ public class MyProfile extends AppCompatActivity {
                                                                                 Log.e("sksLog", "dbref.removeValure() error: "+error.toString());
                                                                                 return;
                                                                             }
+                                                                            Configs.getStorageRef((String) userObj.get("profilePicUrl")).delete();
                                                                             Toast.makeText(MyProfile.this, "Your account has been deleted", Toast.LENGTH_SHORT).show();
                                                                             startActivity(siIntent);
                                                                             finish();
