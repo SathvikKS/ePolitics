@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
-import android.preference.PreferenceManager;
 import android.util.Base64;
 import android.util.Log;
 
@@ -25,8 +24,6 @@ import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
@@ -34,14 +31,14 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.concurrent.ExecutionException;
+import java.util.Objects;
 
 
+@SuppressWarnings("rawtypes")
 public class Configs {
     public static HashMap<String, Object> userObj = new HashMap<>();
     public static SharedPreferences sp;
     static ProgressDialog dialog;
-    static DownloadImage di;
 
     /**
      *
@@ -51,6 +48,10 @@ public class Configs {
         return FirebaseDatabase.getInstance().getReference();
     }
 
+    /**
+     *
+     * @return StorageReference - storageRef
+     */
     public static StorageReference getStorageRef() {
         return FirebaseStorage.getInstance().getReference();
     }
@@ -59,8 +60,7 @@ public class Configs {
      * @return FirebaseAuth
      */
     public static FirebaseAuth getmAuth() {
-        FirebaseAuth mAuth = FirebaseAuth.getInstance();
-        return mAuth;
+        return FirebaseAuth.getInstance();
     }
 
     /**
@@ -68,8 +68,7 @@ public class Configs {
      * @return FirebaseUser
      */
     public static FirebaseUser getUser() {
-        FirebaseUser fUser = FirebaseAuth.getInstance().getCurrentUser();
-        return fUser;
+        return FirebaseAuth.getInstance().getCurrentUser();
     }
 
     /**
@@ -110,7 +109,14 @@ public class Configs {
         }
     }
 
+    /**
+     *
+     * @param context this
+     * @param force force fetch user info
+     * @return userObj hashmap
+     */
     public static HashMap fetchUserInfo(Context context, Boolean force) {
+        sp = context.getSharedPreferences("com.sathvikks.epolitics", Context.MODE_PRIVATE);
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
         dialog = Configs.showProcessDialogue(context, "Fetching your information");
         dialog.setProgress(0);
@@ -120,62 +126,67 @@ public class Configs {
                 Log.i("sksLog", "Hashmap Empty");
             else
                 Log.i("sksLog", "Hashmap forced");
-            dbRef.child("users").child(Configs.generateEmail(Configs.getUser().getEmail())).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+            dbRef.child("users").child(Configs.generateEmail(Objects.requireNonNull(Configs.getUser().getEmail()))).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<DataSnapshot> task) {
                     if (!task.isSuccessful()) {
-                        Log.i("sksLog", "unable to fetch user info\n" + task.getException().toString());
+                        Log.i("sksLog", "unable to fetch user info\n" + task.getException());
                     } else {
                         userObj = (HashMap) task.getResult().getValue();
-                        Log.i("sksLog", "fetched info:\n"+task.getResult().getValue().toString());
+                        Log.i("sksLog", "fetched info:\n"+task.getResult().getValue());
                         if (getAccountType(context) == null) {
                             MainActivity.uat.fetchAccType((String) userObj.get("accType"));
                             Configs.setAccountType(context, (String) userObj.get("accType"));
                         }
-
-                        if (userObj.get("profilePicUrl") != null) {
-                            dialog.dismiss();
-                            dialog = Configs.showProcessDialogue(context, "Downloading profile picture");
-                            dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                            dialog.setIndeterminate(false);
-                            dialog.setProgress(0);
-                            dialog.show();
-                            Log.i("sksLog", "profile picture url is: "+userObj.get("profilePicUrl"));
-                            StorageReference dpRef = FirebaseStorage.getInstance().getReferenceFromUrl((String) userObj.get("profilePicUrl"));
-                            try {
-                                File localFile = File.createTempFile("images", "jpg");
-                                dpRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-                                    @Override
-                                    public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                                        Bitmap bitmap = BitmapFactory.decodeFile(localFile.getAbsolutePath());
-                                        Configs.userObj.put("profilePic", new BitmapDrawable(context.getResources(), bitmap));
-                                        dialog.dismiss();
-                                    }
-                                }).addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception exception) {
-                                        dialog.dismiss();
-                                        Log.i("sksLog", "unable to download picture: "+exception.toString());
-                                    }
-                                })
-                                        .addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
-                                            @Override
-                                            public void onProgress(@NonNull FileDownloadTask.TaskSnapshot snapshot) {
-                                                dialog.setProgress((int) snapshot.getBytesTransferred()/1024);
-                                                if ((int) snapshot.getTotalByteCount() > 0)
-                                                    dialog.setMax((int) snapshot.getTotalByteCount()/1024);
-                                                double progress = (100.0 * snapshot.getBytesTransferred()) / snapshot.getTotalByteCount();
-                                                Log.d("sksLog", "Download is " + progress + "% done");
-                                            }
-                                        });
-                            } catch (IOException e) {
+                        dialog.dismiss();
+                        if (sp.getString("profilePicture", null) == null) {
+                            if (userObj.get("profilePicUrl") != null) {
                                 dialog.dismiss();
-                                e.printStackTrace();
+                                dialog = Configs.showProcessDialogue(context, "Downloading profile picture");
+                                dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                                dialog.setIndeterminate(false);
+                                dialog.setProgress(0);
+                                dialog.show();
+                                Log.i("sksLog", "profile picture url is: "+userObj.get("profilePicUrl"));
+                                StorageReference dpRef = FirebaseStorage.getInstance().getReferenceFromUrl((String) Objects.requireNonNull(userObj.get("profilePicUrl")));
+                                try {
+                                    File localFile = File.createTempFile("images", "jpg");
+                                    dpRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                                        @Override
+                                        public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                            Bitmap bitmap = BitmapFactory.decodeFile(localFile.getAbsolutePath());
+                                            Configs.userObj.put("profilePic", new BitmapDrawable(context.getResources(), bitmap));
+                                            Configs.storeProfilePic(bitmap, context);
+                                            dialog.dismiss();
+                                        }
+                                    }).addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception exception) {
+                                            dialog.dismiss();
+                                            Log.i("sksLog", "unable to download picture: "+ exception);
+                                        }
+                                    })
+                                            .addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
+                                                @Override
+                                                public void onProgress(@NonNull FileDownloadTask.TaskSnapshot snapshot) {
+                                                    dialog.setProgress((int) snapshot.getBytesTransferred()/1024);
+                                                    if ((int) snapshot.getTotalByteCount() > 0)
+                                                        dialog.setMax((int) snapshot.getTotalByteCount()/1024);
+                                                    double progress = (100.0 * snapshot.getBytesTransferred()) / snapshot.getTotalByteCount();
+                                                    Log.d("sksLog", "Download is " + progress + "% done");
+                                                }
+                                            });
+                                } catch (IOException e) {
+                                    dialog.dismiss();
+                                    e.printStackTrace();
+                                }
+                            } else {
+                                dialog.dismiss();
                             }
                         } else {
-                            dialog.dismiss();
+                            Log.i("sksLog", "shared pref not null "+sp.getString("profilePicture", null).substring(0, 4));
+                            Configs.userObj.put("profilePic", new BitmapDrawable(context.getResources(), Configs.StringToBitMap(sp.getString("profilePicture", null))));
                         }
-
                     }
 
                 }
@@ -186,8 +197,27 @@ public class Configs {
     }
 
     /**
+     * Stores profile picture in the stored preferences
+     * @param bitmap  picture to store
+     * @param context  this
+     */
+    public static void storeProfilePic(Bitmap bitmap, Context context) {
+        sp = context.getSharedPreferences("com.sathvikks.epolitics", Context.MODE_PRIVATE);
+        sp.edit().putString("profilePicture", Configs.BitMapToString(bitmap)).apply();
+    }
+
+    /**
+     * Removes profile picture from shared preferences
+     * @param context this
+     */
+    public static void removeProfilePic(Context context) {
+        sp = context.getSharedPreferences("com.sathvikks.epolitics", Context.MODE_PRIVATE);
+        sp.edit().remove("profilePicture").apply();
+    }
+
+    /**
      *
-     * @param context context
+     * @param context this
      * @param message message to be displayed
      * @return returns the dialog object
      */
@@ -252,5 +282,26 @@ public class Configs {
     public static void delAccountType(Context context) {
         sp = context.getSharedPreferences("com.sathvikks.epolitics", Context.MODE_PRIVATE);
         sp.edit().remove("accType").apply();
+    }
+
+    /**
+     * reduces the size of the image
+     * @param bitmap  bitmap to resize
+     * @param percent  resize percent
+     * @return resized bitmap
+     */
+    public static Bitmap getResizedBitmap(Bitmap bitmap, int percent) {
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+
+        float bitmapRatio = (float)width / (float) height;
+        if (bitmapRatio > 1) {
+            width = percent*width/100;
+            height = (int) (width / bitmapRatio);
+        } else {
+            height = percent*height/100;
+            width = (int) (height * bitmapRatio);
+        }
+        return Bitmap.createScaledBitmap(bitmap, width, height, true);
     }
 }
