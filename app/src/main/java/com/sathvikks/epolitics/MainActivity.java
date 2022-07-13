@@ -3,20 +3,11 @@ package com.sathvikks.epolitics;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.PopupWindow;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -112,6 +103,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
@@ -135,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         super.onOptionsItemSelected(item);
@@ -146,6 +139,7 @@ public class MainActivity extends AppCompatActivity {
                 mAuth.signOut();
                 Configs.userObj.clear();
                 Configs.delAccountType(this);
+                Configs.removeProfilePic(this);
                 startActivity(this.siIntent);
                 finish();
                 return true;
@@ -153,5 +147,5 @@ public class MainActivity extends AppCompatActivity {
                 return false;
         }
     }
-
 }
+
