@@ -3,11 +3,20 @@ package com.sathvikks.epolitics;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -22,11 +31,11 @@ import com.google.firebase.database.DatabaseReference;
 import java.util.HashMap;
 import java.util.Objects;
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity {
     public static UpdateAccType uat;
     DatabaseReference dbRef;
     FirebaseAuth mAuth;
-    Intent siIntent;
+    Intent siIntent, npIntent;
     HashMap userObj;
     FloatingActionButton newPostButton;
     String accType;
@@ -115,13 +124,14 @@ public class MainActivity extends AppCompatActivity{
         uat = new UpdateAccType();
         mAuth = Configs.getmAuth();
         siIntent = new Intent(getApplicationContext(), SignIn.class);
+        npIntent = new Intent(getApplicationContext(), NewPost.class);
         dbRef = Configs.getDbRef();
         newPostButton = findViewById(R.id.newPostButton);
         newPostButton.setVisibility(View.GONE);
         newPostButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(MainActivity.this, "hello", Toast.LENGTH_SHORT).show();
+                startActivity(npIntent);
             }
         });
     }
