@@ -17,7 +17,7 @@ public class Post {
         this.postUserEmail = postUserEmail;
     }
 
-    public Post(String postDescription, String postUserName, String postImage, String postUserEmail) {
+    public Post(String postDescription, String postUserName, String postUserEmail, String postImage) {
         this.postDescription = postDescription;
         this.postDateTime = Calendar.getInstance().getTime().toString();
         this.postUserName = postUserName;
@@ -36,10 +36,11 @@ public class Post {
     @Override
     public String toString() {
         return "Post{" +
-                ", postDescription='" + postDescription + '\'' +
+                "postDescription='" + postDescription + '\'' +
                 ", postDateTime='" + postDateTime + '\'' +
                 ", postUserName='" + postUserName + '\'' +
                 ", postImage='" + postImage + '\'' +
+                ", postUserEmail='" + postUserEmail + '\'' +
                 '}';
     }
 

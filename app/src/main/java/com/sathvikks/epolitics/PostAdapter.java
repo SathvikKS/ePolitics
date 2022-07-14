@@ -25,10 +25,12 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyViewHolder> 
     Context context;
     ArrayList<Post> posts;
     DatabaseReference dbRef;
-    public PostAdapter(Context context, ArrayList<Post> posts) {
+    private final PostView pvi;
+    public PostAdapter(Context context, ArrayList<Post> posts, PostView pvi) {
         this.context = context;
         this.posts = posts;
         dbRef = Configs.getDbRef();
+        this.pvi = pvi;
     }
 
     @NonNull
@@ -36,7 +38,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyViewHolder> 
     public PostAdapter.MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(context);
         View view = inflater.inflate(R.layout.post_layout, parent, false);
-        return new PostAdapter.MyViewHolder(view);
+        return new PostAdapter.MyViewHolder(view, pvi, posts);
     }
 
     @Override
@@ -59,11 +61,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyViewHolder> 
                 }
             }
         });
-//        if (myUser.getPhotoUrl() != null) {
-//            Glide.with(context)
-//                    .load(myUser.getPhotoUrl())
-//                    .into(holder.postUserPic);
-//        }
         if (posts.get(position).getPostImage() != null) {
             Glide.with(context)
                     .load(posts.get(position).getPostImage())
@@ -82,13 +79,24 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyViewHolder> 
     public static class MyViewHolder extends RecyclerView.ViewHolder {
         TextView postUserName, postTime, postDescription;
         ImageView postUserPic, postImage;
-        public MyViewHolder(@NonNull View itemView) {
+        public MyViewHolder(@NonNull View itemView, PostView pvi, ArrayList<Post> posts) {
             super(itemView);
             postUserName = itemView.findViewById(R.id.postUserName);
             postTime = itemView.findViewById(R.id.postTime);
             postDescription = itemView.findViewById(R.id.postDescription);
             postUserPic = itemView.findViewById(R.id.postUserPic);
             postImage = itemView.findViewById(R.id.postImage);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (pvi != null) {
+                        int pos = getAdapterPosition();
+                        if (pos != RecyclerView.NO_POSITION) {
+                            pvi.onPostClick(posts.get(pos));
+                        }
+                    }
+                }
+            });
         }
     }
 }
