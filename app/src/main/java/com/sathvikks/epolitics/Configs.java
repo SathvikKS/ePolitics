@@ -114,8 +114,14 @@ public class Configs {
                         userObj = (HashMap) task.getResult().getValue();
                         Log.i("sksLog", "fetched info:\n"+task.getResult().getValue());
                         if (getAccountType(context) == null) {
+                            Log.i("sksLog", "acctype was null, set to: "+userObj.get("accType"));
                             MainActivity.uat.fetchAccType((String) userObj.get("accType"));
                             Configs.setAccountType(context, (String) userObj.get("accType"));
+                        }
+                        if (getAccRegion(context) == null || Objects.equals(getAccRegion(context), "null")) {
+                            Log.i("sksLog", "region was null, set to: "+userObj.get("region"));
+                            MainActivity.uar.fetchRegion((String) userObj.get("region"));
+                            Configs.setAccRegion(context, (String) userObj.get("region"));
                         }
                         dialog.dismiss();
                         if (sp.getString("profilePicture", null) == null) {
@@ -284,5 +290,20 @@ public class Configs {
             width = (int) (height * bitmapRatio);
         }
         return Bitmap.createScaledBitmap(bitmap, width, height, true);
+    }
+
+    public static String getAccRegion(Context context) {
+        sp = context.getSharedPreferences("com.sathvikks.epolitics", Context.MODE_PRIVATE);
+        return sp.getString("region", null);
+    }
+
+    public static void setAccRegion(Context context, String region) {
+        sp = context.getSharedPreferences("com.sathvikks.epolitics", Context.MODE_PRIVATE);
+        sp.edit().putString("region", region).apply();
+    }
+
+    public static void delAccRegion(Context context) {
+        sp = context.getSharedPreferences("com.sathvikks.epolitics", Context.MODE_PRIVATE);
+        sp.edit().remove("region").apply();
     }
 }
