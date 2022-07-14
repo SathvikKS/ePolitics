@@ -8,29 +8,44 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
+    ListView postsView;
+    LinearLayout sll;
+    ArrayList<Post> posts;
     public static UpdateAccType uat;
+    public static UpdateUserRegion uar;
     DatabaseReference dbRef;
     FirebaseAuth mAuth;
     Intent siIntent, npIntent;
     HashMap userObj;
     FloatingActionButton newPostButton;
-    String accType;
-
+    String accType, region;
+    TextView postHeading;
     @Override
     public void onStart() {
         super.onStart();
@@ -92,6 +107,12 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(MainActivity.this, "Welcome LU", Toast.LENGTH_SHORT).show();
                     }
                 }
+
+                @Override
+                public void onAccRegionUpdate(String region) {
+
+                }
+
             });
             if (accType == null) {}
             else if (accType.equals("MLAC")) {
@@ -113,7 +134,14 @@ public class MainActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView((int) R.layout.activity_main);
+        region = Configs.getAccRegion(this);
+        posts = new ArrayList<>();
+        postsView = findViewById(R.id.postsView);
+        //sll = findViewById(R.id.scrollLinearLayout);
+        postHeading = findViewById(R.id.postHeading);
+        postHeading.setText("What's happening nearby");
         uat = new UpdateAccType();
+        uar = new UpdateUserRegion();
         mAuth = Configs.getmAuth();
         siIntent = new Intent(getApplicationContext(), SignIn.class);
         npIntent = new Intent(getApplicationContext(), NewPost.class);
@@ -126,8 +154,103 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(npIntent);
             }
         });
+        ImageView postUserImage = new ImageView(this);
+        TextView postUser = new TextView(this);
+        TextView postDate = new TextView(this);
+        TextView postTitle = new TextView(this);
+        TextView postDescription = new TextView(this);
+        ImageView postImage = new ImageView(this);
+
+
+        uar.setListener(new myListener() {
+            @Override
+            public void onAccTypeUpdate(String accType) {
+
+            }
+
+            @Override
+            public void onAccRegionUpdate(String region) {
+                Log.i("sksLog", "caught region update "+region);
+                createPostView(region);
+            }
+        });
+        if (region == null) {
+            Log.i("sksLog", "region is null "+ Configs.getAccRegion(MainActivity.this));
+
+        } else {
+            Log.i("sksLog", "region not null "+region);
+            createPostView(region);
+        }
+
     }
 
+    public void createPostView(String region) {
+        Log.i("sksLog", "fetching posts for region: "+region);
+        DatabaseReference postsRef = Configs.getDbRef().child("posts").child(region);
+//        postsRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+//            @Override
+//            public void onComplete(@NonNull Task<DataSnapshot> task) {
+//                if(!task.isSuccessful())
+//                    return;
+//                String.valueOf(task.getResult().getValue(post)).split(", ");
+//            }
+//        });
+//        ValueEventListener newPosts = new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot snapshot) {
+//                for (DataSnapshot postSnapshot: snapshot.getChildren()) {
+//                    Post post = postSnapshot.getValue(Post.class);
+//                    Log.i("sksLog", "fetchedPost "+ post);
+//                    posts.add(post);
+//                }
+//                PostAdapter listAdapter = new PostAdapter(MainActivity.this,posts);
+//                postsView.setAdapter(listAdapter);
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError error) {
+//                Log.w("sksLog", "loadPost:onCancelled", error.toException());
+//            }
+//        };
+//        postsRef.addValueEventListener(newPosts);
+        ChildEventListener childEventListener = new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
+                Log.d("sksLog", "onChildAdded:" + dataSnapshot.getKey());
+
+                // A new comment has been added, add it to the displayed list
+                Post post = dataSnapshot.getValue(Post.class);
+                Log.i("sksLog", "added child "+post);
+                posts.add(post);
+                PostAdapter listAdapter = new PostAdapter(MainActivity.this,posts);
+                postsView.setAdapter(listAdapter);
+                // ...
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
+
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String previousChildName) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.w("sksLog", "postComments:onCancelled", databaseError.toException());
+
+            }
+        };
+        postsRef.addChildEventListener(childEventListener);
+    }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         super.onOptionsItemSelected(item);
@@ -140,6 +263,7 @@ public class MainActivity extends AppCompatActivity {
                 Configs.userObj.clear();
                 Configs.delAccountType(this);
                 Configs.removeProfilePic(this);
+                Configs.delAccRegion(this);
                 startActivity(this.siIntent);
                 finish();
                 return true;
