@@ -4,40 +4,49 @@ import java.net.URL;
 import java.util.Calendar;
 
 public class Post {
-    public String postTitle, postDescription, postDateTime, postUserName, postUserPic, postImage;
+    public String postDescription, postDateTime, postUserName, postUserPic, postImage, postUserEmail;
 
     public Post() {
 
     }
 
-    public Post(String postTitle, String postDescription, String postUserName, String postUserPic) {
-        this.postTitle = postTitle;
+    public Post(String postDescription, String postUserName, String postUserPic, String postUserEmail) {
         this.postDescription = postDescription;
         this.postDateTime = Calendar.getInstance().getTime().toString();
         this.postUserName = postUserName;
         this.postUserPic = postUserPic;
+        this.postUserEmail = postUserEmail;
     }
-    public Post(String postTitle, String postDescription, String postUserName) {
-        this.postTitle = postTitle;
+
+    public Post(String postDescription, String postUserName, String postUserPic, String postImage, String postUserEmail) {
+        this.postDescription = postDescription;
+        this.postDateTime = Calendar.getInstance().getTime().toString();
+        this.postUserName = postUserName;
+        this.postUserPic = postUserPic;
+        this.postImage = postImage;
+        this.postUserEmail = postUserEmail;
+    }
+
+    public Post(String postDescription, String postUserName, String postUserEmail) {
         this.postDescription = postDescription;
         this.postDateTime = Calendar.getInstance().getTime().toString();
         this.postUserName = postUserName;
         this.postUserPic = null;
+        this.postUserEmail = postUserEmail;
     }
 
-    public Post(String postTitle, String postDescription, String postDateTime, String postUserName, String postUserPic, String postImage) {
-        this.postTitle = postTitle;
+    public Post(String postDescription, String postDateTime, String postUserName, String postUserPic, String postImage, String postUserEmail) {
         this.postDescription = postDescription;
         this.postDateTime = postDateTime;
         this.postUserName = postUserName;
         this.postUserPic = postUserPic;
         this.postImage = postImage;
+        this.postUserEmail = postUserEmail;
     }
 
     @Override
     public String toString() {
         return "Post{" +
-                "postTitle='" + postTitle + '\'' +
                 ", postDescription='" + postDescription + '\'' +
                 ", postDateTime='" + postDateTime + '\'' +
                 ", postUserName='" + postUserName + '\'' +
@@ -46,12 +55,12 @@ public class Post {
                 '}';
     }
 
-    public String getPostTitle() {
-        return postTitle;
+    public String getPostUserEmail() {
+        return postUserEmail;
     }
 
-    public void setPostTitle(String postTitle) {
-        this.postTitle = postTitle;
+    public void setPostUserEmail(String postUserEmail) {
+        this.postUserEmail = postUserEmail;
     }
 
     public String getPostDescription() {

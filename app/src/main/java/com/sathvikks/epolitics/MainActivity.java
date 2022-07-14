@@ -17,6 +17,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -34,6 +36,7 @@ import java.util.HashMap;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
+    RecyclerView recyclerView;
     ListView postsView;
     LinearLayout sll;
     ArrayList<Post> posts;
@@ -136,7 +139,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView((int) R.layout.activity_main);
         region = Configs.getAccRegion(this);
         posts = new ArrayList<>();
-        postsView = findViewById(R.id.postsView);
+        recyclerView = findViewById(R.id.recyclerView);
+        //postsView = findViewById(R.id.postsView);
         //sll = findViewById(R.id.scrollLinearLayout);
         postHeading = findViewById(R.id.postHeading);
         postHeading.setText("What's happening nearby");
@@ -213,18 +217,19 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //        };
 //        postsRef.addValueEventListener(newPosts);
+
+        PostAdapter listAdapter = new PostAdapter(MainActivity.this,posts);
+        recyclerView.setAdapter(listAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
         ChildEventListener childEventListener = new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
                 Log.d("sksLog", "onChildAdded:" + dataSnapshot.getKey());
 
-                // A new comment has been added, add it to the displayed list
                 Post post = dataSnapshot.getValue(Post.class);
                 Log.i("sksLog", "added child "+post);
                 posts.add(post);
-                PostAdapter listAdapter = new PostAdapter(MainActivity.this,posts);
-                postsView.setAdapter(listAdapter);
-                // ...
+                listAdapter.notifyDataSetChanged();
             }
 
             @Override

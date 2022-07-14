@@ -6,8 +6,11 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Base64;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -99,6 +102,11 @@ public class Configs {
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
         dialog = Configs.showProcessDialogue(context, "Fetching your information");
         dialog.setProgress(0);
+        if (!isNetworkAvailable(context)) {
+            dialog.dismiss();
+            Toast.makeText(context, "You are offline", Toast.LENGTH_SHORT).show();
+            return null;
+        }
         if (userObj.isEmpty() || force) {
             dialog.show();
             if (!force)
@@ -305,5 +313,12 @@ public class Configs {
     public static void delAccRegion(Context context) {
         sp = context.getSharedPreferences("com.sathvikks.epolitics", Context.MODE_PRIVATE);
         sp.edit().remove("region").apply();
+    }
+
+    public static boolean isNetworkAvailable(Context context) {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }
