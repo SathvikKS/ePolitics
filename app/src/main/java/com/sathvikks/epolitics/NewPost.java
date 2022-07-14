@@ -38,7 +38,8 @@ import java.util.HashMap;
 import java.util.Objects;
 
 public class NewPost extends AppCompatActivity {
-    EditText newPostTitle, newPostDescription;
+    Intent homeIntent;
+    EditText newPostDescription;
     Bitmap selectedImageBitmap;
     ImageView newPostImage;
     Button newPostUpload, newPostRemove, newPostAddPost;
@@ -53,11 +54,11 @@ public class NewPost extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_post);
         Objects.requireNonNull(getSupportActionBar()).setTitle("New Post");
-        newPostTitle= findViewById(R.id.newPostTitle);
         newPostDescription = findViewById(R.id.newPostDescription);
         newPostImage = findViewById(R.id.newPostImage);
         newPostUpload = findViewById(R.id.newPostUpload);
         newPostImage.setVisibility(View.GONE);
+        homeIntent = new Intent(getApplicationContext(), MainActivity.class);
         newPostRemove = findViewById(R.id.newPostRemove);
         storageRef = Configs.getStorageRef();
         dbRef = Configs.getDbRef();
@@ -81,83 +82,61 @@ public class NewPost extends AppCompatActivity {
         newPostAddPost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dialog = Configs.showProcessDialogue(NewPost.this, "Adding post...");
-                dialog.show();
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                String newPostTitleText, newPostDescriptionText;
-                newPostTitleText = newPostTitle.getText().toString();
-                newPostDescriptionText = newPostDescription.getText().toString();
                 String postChild = (Calendar.getInstance().getTime().toString()+"myCustomSplit"+myUser.getEmail()).replace(".", ",").replaceAll("\\s", "");
-                Post newPost = new Post(newPostTitleText, newPostDescriptionText, (String) userObj.get("name"), myUser.getEmail());
-                dbRef.child("posts").child((String) Objects.requireNonNull(userObj.get("region"))).child(postChild).setValue(newPost).addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if(!task.isSuccessful()) {
-                            Toast.makeText(NewPost.this, "Unable to add post at the moment", Toast.LENGTH_SHORT).show();
-                            Log.i("sksLog", "add post failure: "+task.getException().toString());
+                if (newPostImage.getVisibility() != View.GONE) {
+                    dialog = Configs.showProcessDialogue(NewPost.this, "Uploading the image...");
+                    dialog.setIndeterminate(false);
+                    dialog.setProgress(0);
+                    dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                    dialog.show();
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    selectedImageBitmap = Configs.getResizedBitmap(selectedImageBitmap, 40);
+                    selectedImageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                    byte[] bitmapData = baos.toByteArray();
+                    StorageReference ref = storageRef.child("posts/"+userObj.get("region")+"/"+postChild);
+                    UploadTask uploadTask = ref.putBytes(bitmapData);
+                    uploadTask.addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
                             dialog.dismiss();
-                            return;
+                            Toast.makeText(NewPost.this, "Failed to upload the image", Toast.LENGTH_SHORT).show();
                         }
-                        if (newPostImage.getVisibility() == View.GONE) {
+                    }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                             dialog.dismiss();
-                            Toast.makeText(NewPost.this, "New post has been created", Toast.LENGTH_SHORT).show();
-                            NewPost.super.onBackPressed();
-                            return;
                         }
-                        dialog.dismiss();
-                        dialog = Configs.showProcessDialogue(NewPost.this, "Uploading the image...");
-                        dialog.setIndeterminate(false);
-                        dialog.setProgress(0);
-                        dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                        dialog.show();
-                        selectedImageBitmap = Configs.getResizedBitmap(selectedImageBitmap, 40);
-                        selectedImageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-                        byte[] bitmapData = baos.toByteArray();
-                        StorageReference ref = storageRef.child("posts/"+userObj.get("region")+"/"+postChild);
-                        UploadTask uploadTask = ref.putBytes(bitmapData);
-                        uploadTask.addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                dialog.dismiss();
-                                Toast.makeText(NewPost.this, "Failed to upload the image", Toast.LENGTH_SHORT).show();
-                                dbRef.child("posts").child((String) Objects.requireNonNull(userObj.get("region"))).child(postChild).removeValue();
+                    });
+                    Task<Uri> urlTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                        @Override
+                        public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                            if (!task.isSuccessful()) {
+                                throw task.getException();
                             }
-                        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                            @Override
-                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                dialog.dismiss();
-                                Toast.makeText(NewPost.this, "New post has been created", Toast.LENGTH_SHORT).show();
-                                NewPost.super.onBackPressed();
+                            return ref.getDownloadUrl();
+                        }
+                    }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Uri> task) {
+                            if (task.isSuccessful()) {
+                                Uri downloadUri = task.getResult();
+                                newPost(postChild, downloadUri.toString());
                             }
-                        });
-                        Task<Uri> urlTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
-                            @Override
-                            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
-                                if (!task.isSuccessful()) {
-                                    throw task.getException();
-                                }
-                                return ref.getDownloadUrl();
-                            }
-                        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Uri> task) {
-                                if (task.isSuccessful()) {
-                                    Uri downloadUri = task.getResult();
-                                    dbRef.child("posts").child((String) Objects.requireNonNull(userObj.get("region"))).child(postChild).child("postImageUrl").setValue(downloadUri.toString());
-                                }
-                            }
-                        });
-                        uploadTask.addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                            @Override
-                            public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                                dialog.setMax((int) taskSnapshot.getTotalByteCount()/1024);
-                                double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
-                                dialog.setProgress((int)taskSnapshot.getBytesTransferred()/1024);
-                                Log.d("sksLog", "Upload is " + progress + "% done");
-                            }
-                        });
-                    }
-                });
+                        }
+                    });
+                    uploadTask.addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                            dialog.setMax((int) taskSnapshot.getTotalByteCount()/1024);
+                            double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
+                            dialog.setProgress((int)taskSnapshot.getBytesTransferred()/1024);
+                            Log.d("sksLog", "Upload is " + progress + "% done");
+                        }
+                    });
+                }
+                else {
+                    newPost(postChild);
+                }
             }
         });
         launchSomeActivity =  registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -183,5 +162,67 @@ public class NewPost extends AppCompatActivity {
         i.setType("image/*");
         i.setAction(Intent.ACTION_GET_CONTENT);
         launchSomeActivity.launch(i);
+    }
+    private void newPost(String postChild, String uri) {
+        dialog = Configs.showProcessDialogue(NewPost.this, "Adding post...");
+        dialog.show();
+        Post newPost;
+        String newPostDescriptionText;
+        newPostDescriptionText = newPostDescription.getText().toString();
+        if(userObj.get("profilePicUrl") == null)
+            newPost = new Post(newPostDescriptionText, (String) userObj.get("name"), myUser.getEmail());
+        else
+            newPost = new Post(newPostDescriptionText, (String) userObj.get("name"), (String) userObj.get("profilePicUrl"), uri, myUser.getEmail());
+        dbRef.child("posts").child((String) Objects.requireNonNull(userObj.get("region"))).child(postChild).setValue(newPost).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(!task.isSuccessful()) {
+                    Toast.makeText(NewPost.this, "Unable to add post at the moment", Toast.LENGTH_SHORT).show();
+                    Log.i("sksLog", "add post failure: "+task.getException().toString());
+                    dialog.dismiss();
+                    return;
+                }
+                if (newPostImage.getVisibility() == View.GONE) {
+                    dialog.dismiss();
+                    Toast.makeText(NewPost.this, "New post has been created", Toast.LENGTH_SHORT).show();
+                    startActivity(homeIntent);
+                    finish();
+                    return;
+                }
+                dialog.dismiss();
+
+            }
+        });
+    }
+    private void newPost(String postChild) {
+        dialog = Configs.showProcessDialogue(NewPost.this, "Adding post...");
+        dialog.show();
+        Post newPost;
+        String newPostDescriptionText;
+        newPostDescriptionText = newPostDescription.getText().toString();
+        if(userObj.get("profilePicUrl") == null)
+            newPost = new Post(newPostDescriptionText, (String) userObj.get("name"), myUser.getEmail());
+        else
+            newPost = new Post(newPostDescriptionText, (String) userObj.get("name"), (String) userObj.get("profilePicUrl"), myUser.getEmail());
+        dbRef.child("posts").child((String) Objects.requireNonNull(userObj.get("region"))).child(postChild).setValue(newPost).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(!task.isSuccessful()) {
+                    Toast.makeText(NewPost.this, "Unable to add post at the moment", Toast.LENGTH_SHORT).show();
+                    Log.i("sksLog", "add post failure: "+task.getException().toString());
+                    dialog.dismiss();
+                    return;
+                }
+                if (newPostImage.getVisibility() == View.GONE) {
+                    dialog.dismiss();
+                    Toast.makeText(NewPost.this, "New post has been created", Toast.LENGTH_SHORT).show();
+                    startActivity(homeIntent);
+                    finish();
+                    return;
+                }
+                dialog.dismiss();
+
+            }
+        });
     }
 }
