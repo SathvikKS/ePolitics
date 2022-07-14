@@ -1,6 +1,7 @@
 package com.sathvikks.epolitics;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,16 +12,23 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.storage.FirebaseStorage;
 
 import java.util.ArrayList;
 
 public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyViewHolder> {
     Context context;
     ArrayList<Post> posts;
-
+    DatabaseReference dbRef;
     public PostAdapter(Context context, ArrayList<Post> posts) {
         this.context = context;
         this.posts = posts;
+        dbRef = Configs.getDbRef();
     }
 
     @NonNull
@@ -39,11 +47,23 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyViewHolder> 
             holder.postDescription.setText(posts.get(position).getPostDescription().substring(0, 100)+"\n... Read more");
         else
             holder.postDescription.setText(posts.get(position).getPostDescription());
-        if (posts.get(position).getPostUserPic() != null) {
-            Glide.with(context)
-                    .load(posts.get(position).getPostUserPic())
-                    .into(holder.postUserPic);
-        }
+        dbRef.child("users").child(Configs.generateEmail(posts.get(position).postUserEmail)).child("profilePicUrl").get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DataSnapshot> task) {
+                if (task.isSuccessful()) {
+                    if (task.getResult().getValue() != null) {
+                        Glide.with(context)
+                            .load(task.getResult().getValue().toString())
+                            .into(holder.postUserPic);
+                    }
+                }
+            }
+        });
+//        if (myUser.getPhotoUrl() != null) {
+//            Glide.with(context)
+//                    .load(myUser.getPhotoUrl())
+//                    .into(holder.postUserPic);
+//        }
         if (posts.get(position).getPostImage() != null) {
             Glide.with(context)
                     .load(posts.get(position).getPostImage())
