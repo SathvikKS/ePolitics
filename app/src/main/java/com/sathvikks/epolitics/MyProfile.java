@@ -166,7 +166,10 @@ public class MyProfile extends AppCompatActivity {
         profileUserGender.setText(userGender);
         profileUserPhone.setText(userPhone);
         profileUserRegion.setText(userRegion);
-        if (userType.equals("MLAC")) {
+        if (userType == null) {
+
+        }
+        else if (userType.equals("MLAC")) {
             profileUserAuthorityLayout.setVisibility(View.GONE);
         }
         else {
