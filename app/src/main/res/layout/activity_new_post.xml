@@ -29,19 +29,6 @@
                 android:textSize="34sp" />
 
             <EditText
-                android:id="@+id/newPostTitle"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="40dp"
-                android:layout_marginTop="41dp"
-                android:layout_marginEnd="40dp"
-                android:ems="10"
-                android:hint="Enter the post title"
-                android:inputType="textPersonName"
-                android:minHeight="48dp"
-                android:textColorHint="#263238" />
-
-            <EditText
                 android:id="@+id/newPostDescription"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
