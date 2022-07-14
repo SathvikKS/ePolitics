@@ -94,7 +94,7 @@ public class NewPost extends AppCompatActivity {
                     dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
                     dialog.show();
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    selectedImageBitmap = Configs.getResizedBitmap(selectedImageBitmap, 40);
+                    selectedImageBitmap = Configs.getResizedBitmap(selectedImageBitmap, 70);
                     selectedImageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                     byte[] bitmapData = baos.toByteArray();
                     StorageReference ref = storageRef.child("posts/"+userObj.get("region")+"/"+postChild);
@@ -154,11 +154,8 @@ public class NewPost extends AppCompatActivity {
                     catch (IOException e) {
                         e.printStackTrace();
                     }
-                    //dialog.show();
                     newPostImage.setVisibility(View.VISIBLE);
                     Glide.with(this).load(selectedImageUri).into(newPostImage);
-                    //newPostImage.setImageBitmap(selectedImageBitmap);
-
                 }
             }
         });
@@ -175,7 +172,7 @@ public class NewPost extends AppCompatActivity {
         Post newPost;
         String newPostDescriptionText;
         newPostDescriptionText = newPostDescription.getText().toString();
-        newPost = new Post(newPostDescriptionText, (String) userObj.get("name"), myUser.getEmail());
+        newPost = new Post(newPostDescriptionText, (String) userObj.get("name"), myUser.getEmail(), uri);
         dbRef.child("posts").child((String) Objects.requireNonNull(userObj.get("region"))).child(postChild).setValue(newPost).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {

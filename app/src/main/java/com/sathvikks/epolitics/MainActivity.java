@@ -29,22 +29,21 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements PostView{
     RecyclerView recyclerView;
-    ListView postsView;
-    LinearLayout sll;
     ArrayList<Post> posts;
     public static UpdateAccType uat;
     public static UpdateUserRegion uar;
     DatabaseReference dbRef;
     FirebaseAuth mAuth;
-    Intent siIntent, npIntent;
+    Intent siIntent, npIntent, viewPostIntent;
     HashMap userObj;
     FloatingActionButton newPostButton;
     String accType, region;
@@ -140,8 +139,6 @@ public class MainActivity extends AppCompatActivity {
         region = Configs.getAccRegion(this);
         posts = new ArrayList<>();
         recyclerView = findViewById(R.id.recyclerView);
-        //postsView = findViewById(R.id.postsView);
-        //sll = findViewById(R.id.scrollLinearLayout);
         postHeading = findViewById(R.id.postHeading);
         postHeading.setText("What's happening nearby");
         uat = new UpdateAccType();
@@ -149,6 +146,7 @@ public class MainActivity extends AppCompatActivity {
         mAuth = Configs.getmAuth();
         siIntent = new Intent(getApplicationContext(), SignIn.class);
         npIntent = new Intent(getApplicationContext(), NewPost.class);
+        viewPostIntent = new Intent(getApplicationContext(), ViewPost.class);
         dbRef = Configs.getDbRef();
         newPostButton = findViewById(R.id.newPostButton);
         newPostButton.setVisibility(View.GONE);
@@ -158,14 +156,6 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(npIntent);
             }
         });
-        ImageView postUserImage = new ImageView(this);
-        TextView postUser = new TextView(this);
-        TextView postDate = new TextView(this);
-        TextView postTitle = new TextView(this);
-        TextView postDescription = new TextView(this);
-        ImageView postImage = new ImageView(this);
-
-
         uar.setListener(new myListener() {
             @Override
             public void onAccTypeUpdate(String accType) {
@@ -191,34 +181,7 @@ public class MainActivity extends AppCompatActivity {
     public void createPostView(String region) {
         Log.i("sksLog", "fetching posts for region: "+region);
         DatabaseReference postsRef = Configs.getDbRef().child("posts").child(region);
-//        postsRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
-//            @Override
-//            public void onComplete(@NonNull Task<DataSnapshot> task) {
-//                if(!task.isSuccessful())
-//                    return;
-//                String.valueOf(task.getResult().getValue(post)).split(", ");
-//            }
-//        });
-//        ValueEventListener newPosts = new ValueEventListener() {
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot snapshot) {
-//                for (DataSnapshot postSnapshot: snapshot.getChildren()) {
-//                    Post post = postSnapshot.getValue(Post.class);
-//                    Log.i("sksLog", "fetchedPost "+ post);
-//                    posts.add(post);
-//                }
-//                PostAdapter listAdapter = new PostAdapter(MainActivity.this,posts);
-//                postsView.setAdapter(listAdapter);
-//            }
-//
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError error) {
-//                Log.w("sksLog", "loadPost:onCancelled", error.toException());
-//            }
-//        };
-//        postsRef.addValueEventListener(newPosts);
-
-        PostAdapter listAdapter = new PostAdapter(MainActivity.this,posts);
+        PostAdapter listAdapter = new PostAdapter(MainActivity.this,posts, MainActivity.this);
         recyclerView.setAdapter(listAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
         ChildEventListener childEventListener = new ChildEventListener() {
@@ -275,6 +238,14 @@ public class MainActivity extends AppCompatActivity {
             default:
                 return false;
         }
+    }
+
+    @Override
+    public void onPostClick(Post post) {
+        Log.i("sksLog", "clicked on post: "+post);
+        Gson gson = new Gson();
+        viewPostIntent.putExtra("post", gson.toJson(post));
+        startActivity(viewPostIntent);
     }
 }
 
