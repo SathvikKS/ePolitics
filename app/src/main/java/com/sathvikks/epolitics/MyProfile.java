@@ -45,6 +45,7 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -254,7 +255,6 @@ public class MyProfile extends AppCompatActivity {
                             if (task.isSuccessful()) {
                                 Uri downloadUri = task.getResult();
                                 dbRef.child("users").child(Configs.generateEmail(userEmail)).child("profilePicUrl").setValue(downloadUri.toString());
-                                Log.i("sksLog", "image url: "+downloadUri.toString());
                             } else {
                             }
                         }
