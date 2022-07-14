@@ -20,6 +20,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -68,7 +69,6 @@ public class NewPost extends AppCompatActivity {
         newPostUpload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                newPostImage.setVisibility(View.VISIBLE);
                 imageChooser();
             }
         });
@@ -82,6 +82,10 @@ public class NewPost extends AppCompatActivity {
         newPostAddPost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (newPostDescription.getText().toString().equals("")) {
+                    Toast.makeText(NewPost.this, "Description cannot be empty!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 String postChild = (Calendar.getInstance().getTime().toString()+"myCustomSplit"+myUser.getEmail()).replace(".", ",").replaceAll("\\s", "");
                 if (newPostImage.getVisibility() != View.GONE) {
                     dialog = Configs.showProcessDialogue(NewPost.this, "Uploading the image...");
@@ -151,7 +155,9 @@ public class NewPost extends AppCompatActivity {
                         e.printStackTrace();
                     }
                     //dialog.show();
-                    newPostImage.setImageBitmap(selectedImageBitmap);
+                    newPostImage.setVisibility(View.VISIBLE);
+                    Glide.with(this).load(selectedImageUri).into(newPostImage);
+                    //newPostImage.setImageBitmap(selectedImageBitmap);
 
                 }
             }
@@ -169,10 +175,7 @@ public class NewPost extends AppCompatActivity {
         Post newPost;
         String newPostDescriptionText;
         newPostDescriptionText = newPostDescription.getText().toString();
-        if(userObj.get("profilePicUrl") == null)
-            newPost = new Post(newPostDescriptionText, (String) userObj.get("name"), myUser.getEmail());
-        else
-            newPost = new Post(newPostDescriptionText, (String) userObj.get("name"), (String) userObj.get("profilePicUrl"), uri, myUser.getEmail());
+        newPost = new Post(newPostDescriptionText, (String) userObj.get("name"), myUser.getEmail());
         dbRef.child("posts").child((String) Objects.requireNonNull(userObj.get("region"))).child(postChild).setValue(newPost).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
@@ -182,15 +185,10 @@ public class NewPost extends AppCompatActivity {
                     dialog.dismiss();
                     return;
                 }
-                if (newPostImage.getVisibility() == View.GONE) {
-                    dialog.dismiss();
-                    Toast.makeText(NewPost.this, "New post has been created", Toast.LENGTH_SHORT).show();
-                    startActivity(homeIntent);
-                    finish();
-                    return;
-                }
                 dialog.dismiss();
-
+                Toast.makeText(NewPost.this, "New post has been created", Toast.LENGTH_SHORT).show();
+                startActivity(homeIntent);
+                finish();
             }
         });
     }
@@ -200,10 +198,7 @@ public class NewPost extends AppCompatActivity {
         Post newPost;
         String newPostDescriptionText;
         newPostDescriptionText = newPostDescription.getText().toString();
-        if(userObj.get("profilePicUrl") == null)
-            newPost = new Post(newPostDescriptionText, (String) userObj.get("name"), myUser.getEmail());
-        else
-            newPost = new Post(newPostDescriptionText, (String) userObj.get("name"), (String) userObj.get("profilePicUrl"), myUser.getEmail());
+        newPost = new Post(newPostDescriptionText, (String) userObj.get("name"), myUser.getEmail());
         dbRef.child("posts").child((String) Objects.requireNonNull(userObj.get("region"))).child(postChild).setValue(newPost).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
@@ -213,15 +208,10 @@ public class NewPost extends AppCompatActivity {
                     dialog.dismiss();
                     return;
                 }
-                if (newPostImage.getVisibility() == View.GONE) {
-                    dialog.dismiss();
-                    Toast.makeText(NewPost.this, "New post has been created", Toast.LENGTH_SHORT).show();
-                    startActivity(homeIntent);
-                    finish();
-                    return;
-                }
                 dialog.dismiss();
-
+                Toast.makeText(NewPost.this, "New post has been created", Toast.LENGTH_SHORT).show();
+                startActivity(homeIntent);
+                finish();
             }
         });
     }
