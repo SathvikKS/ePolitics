@@ -2,7 +2,7 @@ package com.sathvikks.epolitics;
 
 import android.graphics.Bitmap;
 
-import com.google.firebase.database.Exclude;
+import androidx.annotation.NonNull;
 
 import java.net.URL;
 
@@ -27,6 +27,7 @@ public class User {
         profilePic = null;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "User{" +

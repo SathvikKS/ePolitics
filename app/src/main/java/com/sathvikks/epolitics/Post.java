@@ -1,6 +1,5 @@
 package com.sathvikks.epolitics;
 
-import java.net.URL;
 import java.util.Calendar;
 
 public class Post {
