@@ -173,19 +173,25 @@ public class MainActivity extends AppCompatActivity implements PostView{
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
                 Post post = dataSnapshot.getValue(Post.class);
-                posts.add(post);
+                posts.add(0, post);
                 listAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-
+                try {
+                    posts.set(Configs.getPostIndex(posts, snapshot.getKey()), snapshot.getValue(Post.class));
+                    listAdapter.notifyDataSetChanged();
+                } catch (ArrayIndexOutOfBoundsException unused) {}
             }
 
 
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
-
+                try {
+                    posts.remove(Configs.getPostIndex(posts, dataSnapshot.getKey()));
+                    listAdapter.notifyDataSetChanged();
+                } catch (ArrayIndexOutOfBoundsException unused) {}
             }
 
             @Override

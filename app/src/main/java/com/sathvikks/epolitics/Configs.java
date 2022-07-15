@@ -31,6 +31,7 @@ import com.google.firebase.storage.StorageReference;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -307,5 +308,14 @@ public class Configs {
                 = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+    public static int getPostIndex(ArrayList<Post> posts, String postId) {
+        for (int index=0; index<posts.size(); index++) {
+            Post temp = posts.get(index);
+            if (temp != null && temp.getPostId().equals(postId))
+                return index;
+        }
+        return -1;
     }
 }

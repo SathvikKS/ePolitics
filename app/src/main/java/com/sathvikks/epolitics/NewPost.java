@@ -169,7 +169,7 @@ public class NewPost extends AppCompatActivity {
         Post newPost;
         String newPostDescriptionText;
         newPostDescriptionText = newPostDescription.getText().toString();
-        newPost = new Post(newPostDescriptionText, (String) userObj.get("name"), myUser.getEmail(), uri);
+        newPost = new Post(newPostDescriptionText, (String) userObj.get("name"), myUser.getEmail(), uri, postChild);
         dbRef.child("posts").child((String) Objects.requireNonNull(userObj.get("region"))).child(postChild).setValue(newPost).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
@@ -192,7 +192,7 @@ public class NewPost extends AppCompatActivity {
         Post newPost;
         String newPostDescriptionText;
         newPostDescriptionText = newPostDescription.getText().toString();
-        newPost = new Post(newPostDescriptionText, (String) userObj.get("name"), myUser.getEmail());
+        newPost = new Post(newPostDescriptionText, (String) userObj.get("name"), myUser.getEmail(), postChild);
         dbRef.child("posts").child((String) Objects.requireNonNull(userObj.get("region"))).child(postChild).setValue(newPost).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
