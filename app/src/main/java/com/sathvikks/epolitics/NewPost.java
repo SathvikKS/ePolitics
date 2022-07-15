@@ -131,9 +131,7 @@ public class NewPost extends AppCompatActivity {
                         @Override
                         public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
                             dialog.setMax((int) taskSnapshot.getTotalByteCount()/1024);
-                            double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
                             dialog.setProgress((int)taskSnapshot.getBytesTransferred()/1024);
-                            Log.d("sksLog", "Upload is " + progress + "% done");
                         }
                     });
                 }

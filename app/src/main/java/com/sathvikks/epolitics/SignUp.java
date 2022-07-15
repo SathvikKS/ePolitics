@@ -162,17 +162,10 @@ public class SignUp extends AppCompatActivity {
                     public void onComplete(@NonNull Task<DataSnapshot> task) {
                         if (task.isSuccessful()) {
                             suRegion.setAdapter(new ArrayAdapter<>(getApplication(), android.R.layout.simple_spinner_item, String.valueOf(task.getResult().getValue()).split(", ")));
-                            Log.i("sksLog", "fetched the regions: " + task.getResult().toString());
                             dialog.dismiss();
                             return;
                         }
                         Log.i("sksLog", "retrieve regions error: " + Objects.requireNonNull(task.getException()));
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.i("sksLog", "retrieve regions error: " + Objects.requireNonNull(e));
                     }
                 });
     }

@@ -109,10 +109,6 @@ public class Configs {
         }
         if (userObj.isEmpty() || force) {
             dialog.show();
-            if (!force)
-                Log.i("sksLog", "Hashmap Empty");
-            else
-                Log.i("sksLog", "Hashmap forced");
             dbRef.child("users").child(Configs.generateEmail(Objects.requireNonNull(Configs.getUser().getEmail()))).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<DataSnapshot> task) {
@@ -120,14 +116,11 @@ public class Configs {
                         Log.i("sksLog", "unable to fetch user info\n" + task.getException());
                     } else {
                         userObj = (HashMap) task.getResult().getValue();
-                        Log.i("sksLog", "fetched info:\n"+task.getResult().getValue());
                         if (getAccountType(context) == null) {
-                            Log.i("sksLog", "acctype was null, set to: "+userObj.get("accType"));
                             MainActivity.uat.fetchAccType((String) userObj.get("accType"));
                             Configs.setAccountType(context, (String) userObj.get("accType"));
                         }
                         if (getAccRegion(context) == null || Objects.equals(getAccRegion(context), "null")) {
-                            Log.i("sksLog", "region was null, set to: "+userObj.get("region"));
                             MainActivity.uar.fetchRegion((String) userObj.get("region"));
                             Configs.setAccRegion(context, (String) userObj.get("region"));
                         }
@@ -140,9 +133,7 @@ public class Configs {
                                 dialog.setIndeterminate(false);
                                 dialog.setProgress(0);
                                 dialog.show();
-                                Log.i("sksLog", "profile picture url is: "+userObj.get("profilePicUrl"));
                                 StorageReference dpRef = Configs.getStorageRef((String) userObj.get("profilePicUrl"));
-                                //StorageReference dpRef = FirebaseStorage.getInstance().getReferenceFromUrl((String) Objects.requireNonNull(userObj.get("profilePicUrl")));
                                 try {
                                     File localFile = File.createTempFile("images", "jpg");
                                     dpRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
@@ -166,8 +157,6 @@ public class Configs {
                                                     dialog.setProgress((int) snapshot.getBytesTransferred()/1024);
                                                     if ((int) snapshot.getTotalByteCount() > 0)
                                                         dialog.setMax((int) snapshot.getTotalByteCount()/1024);
-                                                    double progress = (100.0 * snapshot.getBytesTransferred()) / snapshot.getTotalByteCount();
-                                                    Log.d("sksLog", "Download is " + progress + "% done");
                                                 }
                                             });
                                 } catch (IOException e) {
@@ -178,15 +167,13 @@ public class Configs {
                                 dialog.dismiss();
                             }
                         } else {
-                            Log.i("sksLog", "shared pref not null "+sp.getString("profilePicture", null).substring(0, 4));
                             Configs.userObj.put("profilePic", new BitmapDrawable(context.getResources(), Configs.StringToBitMap(sp.getString("profilePicture", null))));
                         }
                     }
 
                 }
             });
-        } else
-            Log.i("sksLog", "Hashmap not empty");
+        }
         return userObj;
     }
 

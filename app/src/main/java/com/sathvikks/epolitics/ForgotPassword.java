@@ -45,7 +45,6 @@ public class ForgotPassword extends AppCompatActivity {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()) {
-                                Log.i("sksLog", "resetPassword:success");
                                 Toast.makeText(getApplicationContext(), "A link has been sent to your E-mail ID", Toast.LENGTH_LONG).show();
                                 return;
                             }

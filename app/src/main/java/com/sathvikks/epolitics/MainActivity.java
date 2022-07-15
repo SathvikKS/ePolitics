@@ -97,14 +97,11 @@ public class MainActivity extends AppCompatActivity implements PostView{
                 public void onAccTypeUpdate(String accType) {
                     if (accType.equals("MLAC")) {
                         newPostButton.setVisibility(View.VISIBLE);
-                        Toast.makeText(MainActivity.this, "Welcome MLAC", Toast.LENGTH_SHORT).show();
                     }
-                    else if (accType.equals("LU")) {
-
-                        Toast.makeText(MainActivity.this, "Welcome LU", Toast.LENGTH_SHORT).show();
+                    else {
+                        newPostButton.setVisibility(View.GONE);
                     }
                 }
-
                 @Override
                 public void onAccRegionUpdate(String region) {
 
@@ -114,10 +111,8 @@ public class MainActivity extends AppCompatActivity implements PostView{
             if (accType == null) {}
             else if (accType.equals("MLAC")) {
                 newPostButton.setVisibility(View.VISIBLE);
-                Toast.makeText(MainActivity.this, "Welcome MLAC stored", Toast.LENGTH_SHORT).show();
             } else if (accType.equals("LU")) {
                 newPostButton.setVisibility(View.GONE);
-                Toast.makeText(MainActivity.this, "Welcome LU stored", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -159,22 +154,17 @@ public class MainActivity extends AppCompatActivity implements PostView{
 
             @Override
             public void onAccRegionUpdate(String region) {
-                Log.i("sksLog", "caught region update "+region);
                 createPostView(region);
             }
         });
-        if (region == null) {
-            Log.i("sksLog", "region is null "+ Configs.getAccRegion(MainActivity.this));
-
-        } else {
-            Log.i("sksLog", "region not null "+region);
+        if (region == null) {}
+        else {
             createPostView(region);
         }
 
     }
 
     public void createPostView(String region) {
-        Log.i("sksLog", "fetching posts for region: "+region);
         DatabaseReference postsRef = Configs.getDbRef().child("posts").child(region);
         PostAdapter listAdapter = new PostAdapter(MainActivity.this,posts, MainActivity.this);
         recyclerView.setAdapter(listAdapter);
@@ -182,10 +172,7 @@ public class MainActivity extends AppCompatActivity implements PostView{
         ChildEventListener childEventListener = new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
-                Log.d("sksLog", "onChildAdded:" + dataSnapshot.getKey());
-
                 Post post = dataSnapshot.getValue(Post.class);
-                Log.i("sksLog", "added child "+post);
                 posts.add(post);
                 listAdapter.notifyDataSetChanged();
             }
@@ -237,9 +224,7 @@ public class MainActivity extends AppCompatActivity implements PostView{
 
     @Override
     public void onPostClick(Post post) {
-        Log.i("sksLog", "clicked on post: "+post);
         Gson gson = new Gson();
-        viewPostIntent.putExtra("post", gson.toJson(post));
         startActivity(viewPostIntent);
     }
 }
