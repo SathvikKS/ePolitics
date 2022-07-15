@@ -50,7 +50,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyViewHolder> 
             @Override
             public void onComplete(@NonNull Task<DataSnapshot> task) {
                 if (task.isSuccessful()) {
-                    if (task.getResult().getValue() != null) {
+                    if (task.getResult().getValue() != null && !task.getResult().getValue().equals("null")) {
                         Glide.with(context)
                             .load(task.getResult().getValue().toString())
                             .into(holder.postUserPic);
@@ -58,7 +58,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyViewHolder> 
                 }
             }
         });
-        if (posts.get(position).getPostImage() != null) {
+        if (posts.get(position).getPostImage() != null && !posts.get(position).getPostImage().equals("null")) {
+            holder.postImage.setVisibility(View.VISIBLE);
             Glide.with(context)
                     .load(posts.get(position).getPostImage())
                     .into(holder.postImage);

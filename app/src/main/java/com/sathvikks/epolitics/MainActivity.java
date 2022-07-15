@@ -231,6 +231,7 @@ public class MainActivity extends AppCompatActivity implements PostView{
     @Override
     public void onPostClick(Post post) {
         Gson gson = new Gson();
+        viewPostIntent.putExtra("post", gson.toJson(post));
         startActivity(viewPostIntent);
     }
 }
