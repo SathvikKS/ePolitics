@@ -16,6 +16,9 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 
 public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyViewHolder> {
@@ -50,20 +53,24 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyViewHolder> 
             @Override
             public void onComplete(@NonNull Task<DataSnapshot> task) {
                 if (task.isSuccessful()) {
-                    if (task.getResult().getValue() != null && !task.getResult().getValue().equals("null")) {
+                    try {
+                        new URL((String) task.getResult().getValue()).toURI();
                         Glide.with(context)
-                            .load(task.getResult().getValue().toString())
-                            .into(holder.postUserPic);
+                                .load(task.getResult().getValue().toString())
+                                .into(holder.postUserPic);
+                    } catch (Exception ignored) {
+
                     }
                 }
             }
         });
-        if (posts.get(position).getPostImage() != null && !posts.get(position).getPostImage().equals("null")) {
+        try {
+            new URL(posts.get(position).getPostImage()).toURI();
             holder.postImage.setVisibility(View.VISIBLE);
             Glide.with(context)
                     .load(posts.get(position).getPostImage())
                     .into(holder.postImage);
-        } else {
+        } catch (Exception e) {
             holder.postImage.setVisibility(View.GONE);
         }
 

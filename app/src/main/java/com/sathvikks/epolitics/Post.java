@@ -4,7 +4,7 @@ import java.util.Calendar;
 
 public class Post {
     public String postDescription, postDateTime, postUserName, postImage, postUserEmail, postId;
-
+    public Boolean edited;
     public Post() {
 
     }
@@ -15,6 +15,7 @@ public class Post {
         this.postUserName = postUserName;
         this.postUserEmail = postUserEmail;
         this.postId = postId;
+        this.edited = false;
     }
 
     public Post(String postDescription, String postUserName, String postUserEmail, String postImage, String postId) {
@@ -24,6 +25,7 @@ public class Post {
         this.postImage = postImage;
         this.postUserEmail = postUserEmail;
         this.postId = postId;
+        this.edited = false;
     }
 
     public Post(String postDescription, String postDateTime, String postUserName, String postImage, String postUserEmail, String postId) {
@@ -33,6 +35,7 @@ public class Post {
         this.postImage = postImage;
         this.postUserEmail = postUserEmail;
         this.postId = postId;
+        this.edited = false;
     }
 
     @Override
@@ -43,9 +46,18 @@ public class Post {
                 ", postUserName='" + postUserName + '\'' +
                 ", postImage='" + postImage + '\'' +
                 ", postUserEmail='" + postUserEmail + '\'' +
+                ", postId='" + postId + '\'' +
+                ", edited=" + edited +
                 '}';
     }
 
+    public Boolean getEdited() {
+        return edited;
+    }
+
+    public void setEdited(Boolean edited) {
+        this.edited = edited;
+    }
 
     public String getPostId() { return postId; }
 

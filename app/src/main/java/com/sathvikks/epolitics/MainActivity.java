@@ -25,6 +25,7 @@ import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
@@ -143,7 +144,11 @@ public class MainActivity extends AppCompatActivity implements PostView{
         newPostButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(npIntent);
+                if (!Configs.isNetworkAvailable(MainActivity.this)) {
+                    Toast.makeText(MainActivity.this, "You cannot create a post while you are offline!", Toast.LENGTH_SHORT).show();
+                } else {
+                    startActivity(npIntent);
+                }
             }
         });
         uar.setListener(new myListener() {
@@ -166,6 +171,7 @@ public class MainActivity extends AppCompatActivity implements PostView{
 
     public void createPostView(String region) {
         DatabaseReference postsRef = Configs.getDbRef().child("posts").child(region);
+        postsRef.keepSynced(true);
         PostAdapter listAdapter = new PostAdapter(MainActivity.this,posts, MainActivity.this);
         recyclerView.setAdapter(listAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
@@ -212,7 +218,11 @@ public class MainActivity extends AppCompatActivity implements PostView{
         super.onOptionsItemSelected(item);
         switch (item.getItemId()) {
             case R.id.menuMyProfile:
-                startActivity(new Intent(getApplicationContext(), MyProfile.class));
+                if (!Configs.isNetworkAvailable(MainActivity.this)) {
+                    Toast.makeText(this, "You must be connected to internet for this", Toast.LENGTH_SHORT).show();
+                } else {
+                    startActivity(new Intent(getApplicationContext(), MyProfile.class));
+                }
                 return true;
             case R.id.menuSignOut:
                 mAuth.signOut();

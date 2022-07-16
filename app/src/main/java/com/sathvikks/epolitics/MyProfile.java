@@ -36,6 +36,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -156,8 +157,6 @@ public class MyProfile extends AppCompatActivity {
             userRegion = (String) userObj.get("region");
             userType = (String) userObj.get("accType");
             userPicUrl = (String) userObj.get("profilePicUrl");
-            if (userPicUrl != null || userObj.get("profilePic") != null )
-                profilePicBitmap = (Bitmap) ((BitmapDrawable) userObj.get("profilePic")).getBitmap();
         } catch (Exception e) {
             Log.i("sksLog", "unable to parse json:\n"+e.toString());
             return;
@@ -203,8 +202,11 @@ public class MyProfile extends AppCompatActivity {
                 }
             });
         }
-        if (profilePicBitmap != null) {
-            profileImage.setImageBitmap(profilePicBitmap);
+        if (userPicUrl != null) {
+            Glide.with(MyProfile.this)
+                            .load(userPicUrl)
+                                    .into(profileImage);
+            //profileImage.setImageBitmap(profilePicBitmap);
         }
         launchSomeActivity =  registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
 
