@@ -1,11 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:title="@string/profileHead">
+        <menu>
+            <group android:checkableBehavior="single">
+                <item
+                    android:id="@+id/menuMyProfile"
+                    android:icon="@drawable/my_account_vec"
+                    android:title="@string/profile" />
 
-    <item
-        android:id="@+id/menuMyProfile"
-        android:title="My Profile" />
-    <item
-        android:id="@+id/menuSignOut"
-        android:title="Sign Out" />
+                <item
+                    android:id="@+id/menuSignOut"
+                    android:icon="@drawable/logout_vec"
+                    android:title="@string/logout" />
+            </group>
+        </menu>
+    </item>
+    <item android:title="@string/communicate">
+        <menu>
+            <item
+                android:id="@+id/navReport"
+                android:icon="@drawable/report_vec"
+                android:title="@string/report_issue_to_authority" />
+            <item
+                android:id="@+id/navReportList"
+                android:icon="@drawable/report_messages_vec"
+                android:title="@string/your_reports" />
+            <item
+                android:id="@+id/navCheckReports"
+                android:icon="@drawable/report_messages_vec"
+                android:title="Manage received reports" />
+        </menu>
+    </item>
 </menu>

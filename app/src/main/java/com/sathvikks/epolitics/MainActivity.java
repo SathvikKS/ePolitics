@@ -8,18 +8,25 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -32,7 +39,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
 
-public class MainActivity extends AppCompatActivity implements PostView{
+public class MainActivity extends AppCompatActivity implements PostView {
+    View header;
+    ImageView navProfilePicture;
+    Menu menu;
+    DrawerLayout drawerLayout;
+    NavigationView navigationView;
+    ActionBarDrawerToggle drawerToggle;
+    TextView textView, navReport, navProfileName, navProfileRegion, postHeading;
     RecyclerView recyclerView;
     ArrayList<Post> posts;
     public static UpdateAccType uat;
@@ -43,7 +57,6 @@ public class MainActivity extends AppCompatActivity implements PostView{
     HashMap userObj;
     FloatingActionButton newPostButton;
     String accType, region;
-    TextView postHeading;
     @Override
     public void onStart() {
         super.onStart();
@@ -98,9 +111,12 @@ public class MainActivity extends AppCompatActivity implements PostView{
                 public void onAccTypeUpdate(String accType) {
                     if (accType.equals("MLAC")) {
                         newPostButton.setVisibility(View.VISIBLE);
+                        menu.findItem(R.id.navReport).setVisible(false);
+                        menu.findItem(R.id.navReportList).setVisible(false);
                     }
                     else {
                         newPostButton.setVisibility(View.GONE);
+                        menu.findItem(R.id.navCheckReports).setVisible(false);
                     }
                 }
                 @Override
@@ -112,21 +128,33 @@ public class MainActivity extends AppCompatActivity implements PostView{
             if (accType == null) {}
             else if (accType.equals("MLAC")) {
                 newPostButton.setVisibility(View.VISIBLE);
+                menu.findItem(R.id.navReport).setVisible(false);
+                menu.findItem(R.id.navReportList).setVisible(false);
             } else if (accType.equals("LU")) {
                 newPostButton.setVisibility(View.GONE);
+                menu.findItem(R.id.navCheckReports).setVisible(false);
             }
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu, menu);
-        return super.onCreateOptionsMenu(menu);
     }
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView((int) R.layout.activity_main);
+        drawerLayout=findViewById(R.id.drawer_layout);
+        navigationView=findViewById(R.id.nav_view);
+        menu = navigationView.getMenu();
+        drawerToggle = new ActionBarDrawerToggle(this,drawerLayout,R.string.nav_open,R.string.nav_close);
+        drawerLayout.addDrawerListener(drawerToggle);
+        drawerToggle.syncState();
+        navigationView.bringToFront();
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
+        header = navigationView.getHeaderView(0);
+        navProfileName = header.findViewById(R.id.navProfileName);
+        navProfileRegion = header.findViewById(R.id.navProfileRegion);
+        navProfilePicture = header.findViewById(R.id.navProfilePicture);
+        textView=findViewById(R.id.textView);
+        navReport = findViewById(R.id.navReport);
         region = Configs.getAccRegion(this);
         posts = new ArrayList<>();
         recyclerView = findViewById(R.id.recyclerView);
@@ -166,7 +194,46 @@ public class MainActivity extends AppCompatActivity implements PostView{
         else {
             createPostView(region);
         }
-
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.menuMyProfile:
+                        if (!Configs.isNetworkAvailable(MainActivity.this)) {
+                            Toast.makeText(MainActivity.this, "You must be connected to internet for this", Toast.LENGTH_SHORT).show();
+                        } else {
+                            startActivity(new Intent(getApplicationContext(), MyProfile.class));
+                        }
+                        return true;
+                    case R.id.menuSignOut:
+                        mAuth.signOut();
+                        Configs.userObj.clear();
+                        Configs.delAccountType(MainActivity.this);
+                        Configs.removeProfilePic(MainActivity.this);
+                        Configs.delAccRegion(MainActivity.this);
+                        startActivity(MainActivity.this.siIntent);
+                        finish();
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+        });
+        dbRef.child("users").child(Configs.generateEmail(Objects.requireNonNull(Configs.getUser().getEmail()))).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DataSnapshot> task) {
+                if (task.isSuccessful()) {
+                    HashMap userObj = (HashMap) task.getResult().getValue();
+                    if (userObj.get("profilePicUrl") != null ) {
+                        Glide.with(MainActivity.this)
+                                .load(userObj.get("profilePicUrl"))
+                                .into(navProfilePicture);
+                    }
+                    navProfileName.setText((String) userObj.get("name"));
+                    navProfileRegion.setText((String) userObj.get("region"));
+                }
+            }
+        });
     }
 
     public void createPostView(String region) {
@@ -213,36 +280,30 @@ public class MainActivity extends AppCompatActivity implements PostView{
         };
         postsRef.addChildEventListener(childEventListener);
     }
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        super.onOptionsItemSelected(item);
-        switch (item.getItemId()) {
-            case R.id.menuMyProfile:
-                if (!Configs.isNetworkAvailable(MainActivity.this)) {
-                    Toast.makeText(this, "You must be connected to internet for this", Toast.LENGTH_SHORT).show();
-                } else {
-                    startActivity(new Intent(getApplicationContext(), MyProfile.class));
-                }
-                return true;
-            case R.id.menuSignOut:
-                mAuth.signOut();
-                Configs.userObj.clear();
-                Configs.delAccountType(this);
-                Configs.removeProfilePic(this);
-                Configs.delAccRegion(this);
-                startActivity(this.siIntent);
-                finish();
-                return true;
-            default:
-                return false;
-        }
-    }
+
+
 
     @Override
     public void onPostClick(Post post) {
         Gson gson = new Gson();
         viewPostIntent.putExtra("post", gson.toJson(post));
         startActivity(viewPostIntent);
+    }
+    @Override
+    public void onBackPressed(){
+        if(drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+        }
+        else {
+            super.onBackPressed();
+        }
+    }
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (drawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
 
