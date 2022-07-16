@@ -49,6 +49,9 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyViewHolder> 
             holder.postDescription.setText(posts.get(position).getPostDescription().substring(0, 100)+"\n... Read more");
         else
             holder.postDescription.setText(posts.get(position).getPostDescription());
+        if (posts.get(position).getEdited()) {
+            holder.postLayoutEdited.setVisibility(View.VISIBLE);
+        }
         dbRef.child("users").child(Configs.generateEmail(posts.get(position).postUserEmail)).child("profilePicUrl").get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DataSnapshot> task) {
@@ -82,10 +85,11 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyViewHolder> 
     }
 
     public static class MyViewHolder extends RecyclerView.ViewHolder {
-        TextView postUserName, postTime, postDescription;
+        TextView postUserName, postTime, postDescription, postLayoutEdited;
         ImageView postUserPic, postImage;
         public MyViewHolder(@NonNull View itemView, PostView pvi, ArrayList<Post> posts) {
             super(itemView);
+            postLayoutEdited = itemView.findViewById(R.id.postLayoutEdited);
             postUserName = itemView.findViewById(R.id.postUserName);
             postTime = itemView.findViewById(R.id.postTime);
             postDescription = itemView.findViewById(R.id.postDescription);

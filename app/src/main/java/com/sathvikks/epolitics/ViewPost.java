@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -17,7 +18,7 @@ import com.google.gson.Gson;
 
 public class ViewPost extends AppCompatActivity {
     ImageView vpProfilePic, vpImage;
-    TextView vpUserName, vpTime, vpDescription;
+    TextView vpUserName, vpTime, vpDescription, vpEdited;
     DatabaseReference dbRef;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,10 +28,16 @@ public class ViewPost extends AppCompatActivity {
         Gson gson = new Gson();
         Post post = gson.fromJson(intent.getStringExtra("post"), Post.class);
         dbRef = Configs.getDbRef();
+        vpEdited = findViewById(R.id.vpEdited);
         vpProfilePic = findViewById(R.id.vpProfilePic);
         vpImage = findViewById(R.id.vpImage);
         vpUserName = findViewById(R.id.vpUserName);
         vpTime = findViewById(R.id.vpTime);
+        if (post.getEdited()) {
+            vpEdited.setVisibility(View.VISIBLE);
+        } else {
+            vpEdited.setVisibility(View.GONE);
+        }
         vpDescription = findViewById(R.id.vpDescription);
         vpUserName.setText(post.getPostUserName());
         vpTime.setText(post.getPostDateTime().substring(0, 16));

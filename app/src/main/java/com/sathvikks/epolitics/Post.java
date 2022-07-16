@@ -4,7 +4,7 @@ import java.util.Calendar;
 
 public class Post {
     public String postDescription, postDateTime, postUserName, postImage, postUserEmail, postId;
-    public Boolean edited;
+    public boolean edited;
     public Post() {
 
     }
@@ -51,7 +51,7 @@ public class Post {
                 '}';
     }
 
-    public Boolean getEdited() {
+    public boolean getEdited() {
         return edited;
     }
 

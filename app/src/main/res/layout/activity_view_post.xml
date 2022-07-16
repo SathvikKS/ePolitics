@@ -99,6 +99,13 @@
                     android:textSize="20sp" />
 
                 <TextView
+                    android:id="@+id/vpEdited"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="(edited)"
+                    android:visibility="gone" />
+
+                <TextView
                     android:id="@+id/vpDescription"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
