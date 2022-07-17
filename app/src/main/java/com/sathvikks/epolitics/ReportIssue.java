@@ -37,72 +37,73 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Objects;
 
-public class NewPost extends AppCompatActivity {
+public class ReportIssue extends AppCompatActivity {
     Intent homeIntent;
-    EditText newPostDescription;
-    Bitmap selectedImageBitmap;
-    ImageView newPostImage;
-    Button newPostUpload, newPostRemove, newPostAddPost;
+    EditText reportIssueDescription;
+    Bitmap selectedImageBitmap, compressedBitMap;
+    ImageView reportIssueImage;
+    Button reportIssueUpload, reportIssueRemove, reportIssueReport;
     ProgressDialog dialog;
     StorageReference storageRef;
     FirebaseUser myUser;
     DatabaseReference dbRef;
     HashMap userObj;
     ActivityResultLauncher<Intent> launchSomeActivity;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_new_post);
-        Objects.requireNonNull(getSupportActionBar()).setTitle("New Post");
-        newPostDescription = findViewById(R.id.reportIssueDescription);
-        newPostImage = findViewById(R.id.reportIssueImage);
-        newPostUpload = findViewById(R.id.reportIssueUpload);
-        newPostImage.setVisibility(View.GONE);
+        setContentView(R.layout.activity_report_issue);
+        Objects.requireNonNull(getSupportActionBar()).setTitle("Report an Issue");
+        reportIssueDescription = findViewById(R.id.reportIssueDescription);
+        reportIssueImage = findViewById(R.id.reportIssueImage);
+        reportIssueUpload = findViewById(R.id.reportIssueUpload);
+        reportIssueImage.setVisibility(View.GONE);
         homeIntent = new Intent(getApplicationContext(), MainActivity.class);
-        newPostRemove = findViewById(R.id.reportIssueRemove);
+        reportIssueRemove = findViewById(R.id.reportIssueRemove);
         storageRef = Configs.getStorageRef();
         dbRef = Configs.getDbRef();
         myUser = Configs.getUser();
         userObj = Configs.fetchUserInfo(this, false);
-        newPostAddPost = findViewById(R.id.reportIssueReport);
-        newPostUpload.setOnClickListener(new View.OnClickListener() {
+        reportIssueReport = findViewById(R.id.reportIssueReport);
+        reportIssueUpload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 imageChooser();
             }
         });
-        newPostRemove.setOnClickListener(new View.OnClickListener() {
+        reportIssueRemove.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                newPostImage.setImageBitmap(null);
-                newPostImage.setVisibility(View.GONE);
+                reportIssueImage.setImageBitmap(null);
+                reportIssueImage.setVisibility(View.GONE);
             }
         });
-        newPostAddPost.setOnClickListener(new View.OnClickListener() {
+        reportIssueReport.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (newPostDescription.getText().toString().equals("")) {
-                    Toast.makeText(NewPost.this, "Description cannot be empty!", Toast.LENGTH_SHORT).show();
+                if (reportIssueDescription.getText().toString().equals("")) {
+                    Toast.makeText(ReportIssue.this, "Description cannot be empty!", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 String postChild = (Calendar.getInstance().getTime().toString()+"myCustomSplit"+myUser.getEmail()).replace(".", ",").replaceAll("\\s", "");
-                if (newPostImage.getVisibility() != View.GONE) {
-                    dialog = Configs.showProcessDialogue(NewPost.this, "Uploading the image...");
+                if (reportIssueImage.getVisibility() != View.GONE) {
+                    dialog = Configs.showProcessDialogue(ReportIssue.this, "Uploading the image...");
                     dialog.setIndeterminate(false);
                     dialog.setProgress(0);
                     dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
                     dialog.show();
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    selectedImageBitmap = Configs.getResizedBitmap(selectedImageBitmap, 70);
-                    selectedImageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                    compressedBitMap = Configs.getResizedBitmap(selectedImageBitmap, 50);
+                    compressedBitMap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                     byte[] bitmapData = baos.toByteArray();
-                    StorageReference ref = storageRef.child("posts/"+userObj.get("region")+"/"+postChild);
+                    StorageReference ref = storageRef.child("reports/"+userObj.get("region")+"/"+postChild);
                     UploadTask uploadTask = ref.putBytes(bitmapData);
                     uploadTask.addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
                             dialog.dismiss();
-                            Toast.makeText(NewPost.this, "Failed to upload the image", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(ReportIssue.this, "Failed to upload the image", Toast.LENGTH_SHORT).show();
                         }
                     }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
@@ -123,7 +124,7 @@ public class NewPost extends AppCompatActivity {
                         public void onComplete(@NonNull Task<Uri> task) {
                             if (task.isSuccessful()) {
                                 Uri downloadUri = task.getResult();
-                                newPost(postChild, downloadUri.toString());
+                                newReport(postChild, downloadUri.toString());
                             }
                         }
                     });
@@ -136,7 +137,7 @@ public class NewPost extends AppCompatActivity {
                     });
                 }
                 else {
-                    newPost(postChild);
+                    newReport(postChild);
                 }
             }
         });
@@ -151,8 +152,8 @@ public class NewPost extends AppCompatActivity {
                     catch (IOException e) {
                         e.printStackTrace();
                     }
-                    newPostImage.setVisibility(View.VISIBLE);
-                    Glide.with(this).load(selectedImageUri).into(newPostImage);
+                    reportIssueImage.setVisibility(View.VISIBLE);
+                    Glide.with(this).load(selectedImageUri).into(reportIssueImage);
                 }
             }
         });
@@ -163,47 +164,47 @@ public class NewPost extends AppCompatActivity {
         i.setAction(Intent.ACTION_GET_CONTENT);
         launchSomeActivity.launch(i);
     }
-    private void newPost(String postChild, String uri) {
-        dialog = Configs.showProcessDialogue(NewPost.this, "Adding post...");
+    private void newReport(String postChild, String uri) {
+        dialog = Configs.showProcessDialogue(ReportIssue.this, "Reporting ...");
         dialog.show();
         Post newPost;
         String newPostDescriptionText;
-        newPostDescriptionText = newPostDescription.getText().toString();
+        newPostDescriptionText = reportIssueDescription.getText().toString();
         newPost = new Post(newPostDescriptionText, (String) userObj.get("name"), myUser.getEmail(), uri, postChild);
-        dbRef.child("posts").child((String) Objects.requireNonNull(userObj.get("region"))).child(postChild).setValue(newPost).addOnCompleteListener(new OnCompleteListener<Void>() {
+        dbRef.child("reports").child((String) Objects.requireNonNull(userObj.get("region"))).child(postChild).setValue(newPost).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if(!task.isSuccessful()) {
-                    Toast.makeText(NewPost.this, "Unable to add post at the moment", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ReportIssue.this, "Unable to report issue at the moment", Toast.LENGTH_SHORT).show();
                     Log.i("sksLog", "add post failure: "+task.getException().toString());
                     dialog.dismiss();
                     return;
                 }
                 dialog.dismiss();
-                Toast.makeText(NewPost.this, "New post has been created", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ReportIssue.this, "Your issue has been reported", Toast.LENGTH_SHORT).show();
                 startActivity(homeIntent);
                 finish();
             }
         });
     }
-    private void newPost(String postChild) {
-        dialog = Configs.showProcessDialogue(NewPost.this, "Adding post...");
+    private void newReport(String postChild) {
+        dialog = Configs.showProcessDialogue(ReportIssue.this, "Reporting ...");
         dialog.show();
         Post newPost;
         String newPostDescriptionText;
-        newPostDescriptionText = newPostDescription.getText().toString();
+        newPostDescriptionText = reportIssueDescription.getText().toString();
         newPost = new Post(newPostDescriptionText, (String) userObj.get("name"), myUser.getEmail(), postChild);
-        dbRef.child("posts").child((String) Objects.requireNonNull(userObj.get("region"))).child(postChild).setValue(newPost).addOnCompleteListener(new OnCompleteListener<Void>() {
+        dbRef.child("reports").child((String) Objects.requireNonNull(userObj.get("region"))).child(postChild).setValue(newPost).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if(!task.isSuccessful()) {
-                    Toast.makeText(NewPost.this, "Unable to add post at the moment", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ReportIssue.this, "Unable to report issue at the moment", Toast.LENGTH_SHORT).show();
                     Log.i("sksLog", "add post failure: "+task.getException().toString());
                     dialog.dismiss();
                     return;
                 }
                 dialog.dismiss();
-                Toast.makeText(NewPost.this, "New post has been created", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ReportIssue.this, "Your issue has been reported", Toast.LENGTH_SHORT).show();
                 startActivity(homeIntent);
                 finish();
             }

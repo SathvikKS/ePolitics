@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements PostView {
     public static UpdateUserRegion uar;
     DatabaseReference dbRef;
     FirebaseAuth mAuth;
-    Intent siIntent, npIntent, viewPostIntent;
+    Intent siIntent, npIntent, viewPostIntent, newReportIntent;
     HashMap userObj;
     FloatingActionButton newPostButton;
     String accType, region;
@@ -166,6 +166,7 @@ public class MainActivity extends AppCompatActivity implements PostView {
         siIntent = new Intent(getApplicationContext(), SignIn.class);
         npIntent = new Intent(getApplicationContext(), NewPost.class);
         viewPostIntent = new Intent(getApplicationContext(), ViewPost.class);
+        newReportIntent = new Intent(getApplicationContext(), ReportIssue.class);
         dbRef = Configs.getDbRef();
         newPostButton = findViewById(R.id.newPostButton);
         newPostButton.setVisibility(View.GONE);
@@ -214,6 +215,8 @@ public class MainActivity extends AppCompatActivity implements PostView {
                         startActivity(MainActivity.this.siIntent);
                         finish();
                         return true;
+                    case R.id.navReport:
+                        startActivity(newReportIntent);
                     default:
                         return false;
                 }
@@ -283,9 +286,6 @@ public class MainActivity extends AppCompatActivity implements PostView {
         };
         postsRef.addChildEventListener(childEventListener);
     }
-
-
-
     @Override
     public void onPostClick(Post post) {
         Gson gson = new Gson();
