@@ -26,11 +26,8 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.gson.Gson;
 
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Objects;
 
 public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyViewHolder> {
     FirebaseUser myUser;
@@ -165,12 +162,18 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyViewHolder> 
             postUserPic = itemView.findViewById(R.id.postUserPic);
             postImage = itemView.findViewById(R.id.postImage);
             postOptions = itemView.findViewById(R.id.postOptions);
-            postOptions.setOnClickListener(new View.OnClickListener() {
+            itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
+                    if (pvi != null) {
+                        int pos = getAdapterPosition();
+                        if (pos != RecyclerView.NO_POSITION) {
+                            pvi.onPostClick(posts.get(pos));
+                        }
+                    }
                 }
             });
+
         }
     }
 }

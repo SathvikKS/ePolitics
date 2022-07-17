@@ -163,10 +163,15 @@ public class ReportsAdapter extends RecyclerView.Adapter<PostAdapter.MyViewHolde
             postUserPic = itemView.findViewById(R.id.postUserPic);
             postImage = itemView.findViewById(R.id.postImage);
             postOptions = itemView.findViewById(R.id.postOptions);
-            postOptions.setOnClickListener(new View.OnClickListener() {
+            itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
+                    if (pvi != null) {
+                        int pos = getAdapterPosition();
+                        if (pos != RecyclerView.NO_POSITION) {
+                            pvi.onPostClick(reports.get(pos));
+                        }
+                    }
                 }
             });
         }

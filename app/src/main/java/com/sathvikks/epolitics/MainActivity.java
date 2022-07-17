@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements PostView {
     public static UpdateUserRegion uar;
     DatabaseReference dbRef;
     FirebaseAuth mAuth;
-    Intent siIntent, npIntent, viewPostIntent, newReportIntent, myReportsIntent;
+    Intent siIntent, npIntent, viewPostIntent, newReportIntent, myReportsIntent, allReportsIntent;
     HashMap userObj;
     FloatingActionButton newPostButton;
     String accType, region;
@@ -166,6 +166,7 @@ public class MainActivity extends AppCompatActivity implements PostView {
         viewPostIntent = new Intent(getApplicationContext(), ViewPost.class);
         newReportIntent = new Intent(getApplicationContext(), ReportIssue.class);
         myReportsIntent = new Intent(getApplicationContext(), MyReports.class);
+        allReportsIntent = new Intent(getApplicationContext(), AllReports.class);
         dbRef = Configs.getDbRef();
         newPostButton = findViewById(R.id.newPostButton);
         newPostButton.setVisibility(View.GONE);
@@ -219,6 +220,9 @@ public class MainActivity extends AppCompatActivity implements PostView {
                         return true;
                     case R.id.navReportList:
                         startActivity(myReportsIntent);
+                        return true;
+                    case R.id.navCheckReports:
+                        startActivity(allReportsIntent);
                         return true;
                     default:
                         return false;

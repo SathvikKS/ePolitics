@@ -21,14 +21,21 @@
         android:theme="@style/Theme.EPolitics"
         tools:targetApi="31">
         <activity
+            android:name=".AllReports"
+            android:exported="false"
+            android:screenOrientation="portrait"/>
+        <activity
             android:name=".EditReport"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".MyReports"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".EditPost"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ReportIssue"
             android:exported="false"
