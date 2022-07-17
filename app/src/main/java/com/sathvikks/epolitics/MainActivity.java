@@ -16,7 +16,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -32,7 +31,6 @@ import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
@@ -53,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements PostView {
     public static UpdateUserRegion uar;
     DatabaseReference dbRef;
     FirebaseAuth mAuth;
-    Intent siIntent, npIntent, viewPostIntent, newReportIntent;
+    Intent siIntent, npIntent, viewPostIntent, newReportIntent, myReportsIntent;
     HashMap userObj;
     FloatingActionButton newPostButton;
     String accType, region;
@@ -167,6 +165,7 @@ public class MainActivity extends AppCompatActivity implements PostView {
         npIntent = new Intent(getApplicationContext(), NewPost.class);
         viewPostIntent = new Intent(getApplicationContext(), ViewPost.class);
         newReportIntent = new Intent(getApplicationContext(), ReportIssue.class);
+        myReportsIntent = new Intent(getApplicationContext(), MyReports.class);
         dbRef = Configs.getDbRef();
         newPostButton = findViewById(R.id.newPostButton);
         newPostButton.setVisibility(View.GONE);
@@ -217,6 +216,10 @@ public class MainActivity extends AppCompatActivity implements PostView {
                         return true;
                     case R.id.navReport:
                         startActivity(newReportIntent);
+                        return true;
+                    case R.id.navReportList:
+                        startActivity(myReportsIntent);
+                        return true;
                     default:
                         return false;
                 }
