@@ -30,64 +30,81 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.google.gson.Gson;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Objects;
 
-public class NewPost extends AppCompatActivity {
-    Intent homeIntent;
-    EditText newPostDescription;
+public class EditPost extends AppCompatActivity {
+    Boolean pictureChange = false;
+    Intent homeIntent, thisIntent;
+    EditText editPostDescription;
     Bitmap selectedImageBitmap;
-    ImageView newPostImage;
-    Button newPostUpload, newPostRemove, newPostAddPost;
+    ImageView editPostImage;
+    Button editPostUpload, editPostRemove, editPostEdit;
     ProgressDialog dialog;
     StorageReference storageRef;
     FirebaseUser myUser;
     DatabaseReference dbRef;
     HashMap userObj;
+    Post post;
     ActivityResultLauncher<Intent> launchSomeActivity;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_post);
-        Objects.requireNonNull(getSupportActionBar()).setTitle("New Post");
-        newPostDescription = findViewById(R.id.editPostDescription);
-        newPostImage = findViewById(R.id.editPostImage);
-        newPostUpload = findViewById(R.id.editPostUpload);
-        newPostImage.setVisibility(View.GONE);
+        thisIntent = getIntent();
+        Gson gson = new Gson();
+        post = gson.fromJson(thisIntent.getStringExtra("post"), Post.class);
+        Objects.requireNonNull(getSupportActionBar()).setTitle("Edit Post");
+        editPostDescription = findViewById(R.id.editPostDescription);
+        editPostImage = findViewById(R.id.editPostImage);
+        editPostUpload = findViewById(R.id.editPostUpload);
+        editPostImage.setVisibility(View.GONE);
         homeIntent = new Intent(getApplicationContext(), MainActivity.class);
-        newPostRemove = findViewById(R.id.editPostRemove);
+        editPostRemove = findViewById(R.id.editPostRemove);
         storageRef = Configs.getStorageRef();
         dbRef = Configs.getDbRef();
         myUser = Configs.getUser();
         userObj = Configs.fetchUserInfo(this, false);
-        newPostAddPost = findViewById(R.id.editPostEdit);
-        newPostUpload.setOnClickListener(new View.OnClickListener() {
+        editPostEdit = findViewById(R.id.editPostEdit);
+        editPostDescription.setText(post.getPostDescription());
+        try {
+            new URL((String) post.getPostImage()).toURI();
+            editPostImage.setVisibility(View.VISIBLE);
+            Glide.with(EditPost.this)
+                    .load(post.getPostImage())
+                    .into(editPostImage);
+        } catch (Exception ignored) {
+
+        }
+        editPostUpload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 imageChooser();
             }
         });
-        newPostRemove.setOnClickListener(new View.OnClickListener() {
+        editPostRemove.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                newPostImage.setImageBitmap(null);
-                newPostImage.setVisibility(View.GONE);
+                editPostImage.setImageBitmap(null);
+                editPostImage.setVisibility(View.GONE);
             }
         });
-        newPostAddPost.setOnClickListener(new View.OnClickListener() {
+        editPostEdit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (newPostDescription.getText().toString().equals("")) {
-                    Toast.makeText(NewPost.this, "Description cannot be empty!", Toast.LENGTH_SHORT).show();
+                if (editPostDescription.getText().toString().equals("")) {
+                    Toast.makeText(EditPost.this, "Description cannot be empty!", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                String postChild = (Calendar.getInstance().getTime().toString()+"myCustomSplit"+myUser.getEmail()).replace(".", ",").replaceAll("\\s", "");
-                if (newPostImage.getVisibility() != View.GONE) {
-                    dialog = Configs.showProcessDialogue(NewPost.this, "Uploading the image...");
+                String postChild = post.postId;
+                if (editPostImage.getVisibility() != View.GONE && pictureChange) {
+                    dialog = Configs.showProcessDialogue(EditPost.this, "Uploading the image...");
                     dialog.setIndeterminate(false);
                     dialog.setProgress(0);
                     dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
@@ -102,7 +119,7 @@ public class NewPost extends AppCompatActivity {
                         @Override
                         public void onFailure(@NonNull Exception e) {
                             dialog.dismiss();
-                            Toast.makeText(NewPost.this, "Failed to upload the image", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(EditPost.this, "Failed to upload the image", Toast.LENGTH_SHORT).show();
                         }
                     }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
@@ -123,7 +140,7 @@ public class NewPost extends AppCompatActivity {
                         public void onComplete(@NonNull Task<Uri> task) {
                             if (task.isSuccessful()) {
                                 Uri downloadUri = task.getResult();
-                                newPost(postChild, downloadUri.toString());
+                                editPost(postChild, downloadUri.toString());
                             }
                         }
                     });
@@ -136,7 +153,7 @@ public class NewPost extends AppCompatActivity {
                     });
                 }
                 else {
-                    newPost(postChild);
+                    editPost(postChild);
                 }
             }
         });
@@ -151,8 +168,9 @@ public class NewPost extends AppCompatActivity {
                     catch (IOException e) {
                         e.printStackTrace();
                     }
-                    newPostImage.setVisibility(View.VISIBLE);
-                    Glide.with(this).load(selectedImageUri).into(newPostImage);
+                    editPostImage.setVisibility(View.VISIBLE);
+                    Glide.with(this).load(selectedImageUri).into(editPostImage);
+                    pictureChange = true;
                 }
             }
         });
@@ -163,47 +181,53 @@ public class NewPost extends AppCompatActivity {
         i.setAction(Intent.ACTION_GET_CONTENT);
         launchSomeActivity.launch(i);
     }
-    private void newPost(String postChild, String uri) {
-        dialog = Configs.showProcessDialogue(NewPost.this, "Adding post...");
+    private void editPost(String postChild, String uri) {
+        dialog = Configs.showProcessDialogue(EditPost.this, "Updating the post...");
         dialog.show();
-        Post newPost;
-        String newPostDescriptionText;
-        newPostDescriptionText = newPostDescription.getText().toString();
-        newPost = new Post(newPostDescriptionText, (String) userObj.get("name"), myUser.getEmail(), uri, postChild);
-        dbRef.child("posts").child((String) Objects.requireNonNull(userObj.get("region"))).child(postChild).setValue(newPost).addOnCompleteListener(new OnCompleteListener<Void>() {
+        Post editPost;
+        String editPostDescriptionText;
+        editPostDescriptionText = editPostDescription.getText().toString();
+        editPost = new Post(editPostDescriptionText, (String) userObj.get("name"), myUser.getEmail(), uri, postChild);
+        editPost.setEdited(true);
+        dbRef.child("posts").child((String) Objects.requireNonNull(userObj.get("region"))).child(postChild).setValue(editPost).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if(!task.isSuccessful()) {
-                    Toast.makeText(NewPost.this, "Unable to add post at the moment", Toast.LENGTH_SHORT).show();
-                    Log.i("sksLog", "add post failure: "+task.getException().toString());
+                    Toast.makeText(EditPost.this, "Unable to update post at the moment", Toast.LENGTH_SHORT).show();
+                    Log.i("sksLog", "update post failure: "+task.getException().toString());
                     dialog.dismiss();
                     return;
                 }
                 dialog.dismiss();
-                Toast.makeText(NewPost.this, "New post has been created", Toast.LENGTH_SHORT).show();
+                Toast.makeText(EditPost.this, "The post has been updated", Toast.LENGTH_SHORT).show();
                 startActivity(homeIntent);
                 finish();
             }
         });
     }
-    private void newPost(String postChild) {
-        dialog = Configs.showProcessDialogue(NewPost.this, "Adding post...");
+    private void editPost(String postChild) {
+        dialog = Configs.showProcessDialogue(EditPost.this, "Updating the post...");
         dialog.show();
-        Post newPost;
-        String newPostDescriptionText;
-        newPostDescriptionText = newPostDescription.getText().toString();
-        newPost = new Post(newPostDescriptionText, (String) userObj.get("name"), myUser.getEmail(), postChild);
-        dbRef.child("posts").child((String) Objects.requireNonNull(userObj.get("region"))).child(postChild).setValue(newPost).addOnCompleteListener(new OnCompleteListener<Void>() {
+        Post editPost;
+        String editPostDescriptionText;
+        editPostDescriptionText = editPostDescription.getText().toString();
+        if (!pictureChange && editPostImage.getVisibility() == View.VISIBLE) {
+            editPost = new Post(editPostDescriptionText, (String) userObj.get("name"), myUser.getEmail(), post.getPostImage() ,postChild);
+        } else {
+            editPost = new Post(editPostDescriptionText, (String) userObj.get("name"), myUser.getEmail(), postChild);
+        }
+        editPost.setEdited(true);
+        dbRef.child("posts").child((String) Objects.requireNonNull(userObj.get("region"))).child(postChild).setValue(editPost).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if(!task.isSuccessful()) {
-                    Toast.makeText(NewPost.this, "Unable to add post at the moment", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(EditPost.this, "Unable to add post at the moment", Toast.LENGTH_SHORT).show();
                     Log.i("sksLog", "add post failure: "+task.getException().toString());
                     dialog.dismiss();
                     return;
                 }
                 dialog.dismiss();
-                Toast.makeText(NewPost.this, "New post has been created", Toast.LENGTH_SHORT).show();
+                Toast.makeText(EditPost.this, "New post has been created", Toast.LENGTH_SHORT).show();
                 startActivity(homeIntent);
                 finish();
             }

@@ -130,50 +130,6 @@ public class Configs {
                             Configs.setAccRegion(context, (String) userObj.get("region"));
                         }
                         dialog.dismiss();
-//                        if (sp.getString("profilePicture", null) == null) {
-//                            if (userObj.get("profilePicUrl") != null) {
-//                                dialog.dismiss();
-//                                dialog = Configs.showProcessDialogue(context, "Downloading profile picture");
-//                                dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-//                                dialog.setIndeterminate(false);
-//                                dialog.setProgress(0);
-//                                dialog.show();
-//                                StorageReference dpRef = Configs.getStorageRef((String) userObj.get("profilePicUrl"));
-//                                try {
-//                                    File localFile = File.createTempFile("images", "jpg");
-//                                    dpRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-//                                        @Override
-//                                        public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-//                                            Bitmap bitmap = BitmapFactory.decodeFile(localFile.getAbsolutePath());
-//                                            Configs.userObj.put("profilePic", new BitmapDrawable(context.getResources(), bitmap));
-//                                            Configs.storeProfilePic(bitmap, context);
-//                                            dialog.dismiss();
-//                                        }
-//                                    }).addOnFailureListener(new OnFailureListener() {
-//                                        @Override
-//                                        public void onFailure(@NonNull Exception exception) {
-//                                            dialog.dismiss();
-//                                            Log.i("sksLog", "unable to download picture: "+ exception);
-//                                        }
-//                                    })
-//                                            .addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
-//                                                @Override
-//                                                public void onProgress(@NonNull FileDownloadTask.TaskSnapshot snapshot) {
-//                                                    dialog.setProgress((int) snapshot.getBytesTransferred()/1024);
-//                                                    if ((int) snapshot.getTotalByteCount() > 0)
-//                                                        dialog.setMax((int) snapshot.getTotalByteCount()/1024);
-//                                                }
-//                                            });
-//                                } catch (IOException e) {
-//                                    dialog.dismiss();
-//                                    e.printStackTrace();
-//                                }
-//                            } else {
-//                                dialog.dismiss();
-//                            }
-//                        } else {
-//                            Configs.userObj.put("profilePic", new BitmapDrawable(context.getResources(), Configs.StringToBitMap(sp.getString("profilePicture", null))));
-//                        }
                     }
 
                 }

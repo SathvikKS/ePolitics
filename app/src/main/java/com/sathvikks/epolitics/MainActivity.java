@@ -219,6 +219,9 @@ public class MainActivity extends AppCompatActivity implements PostView {
                 }
             }
         });
+        if (Configs.getUser() == null ) {
+            return;
+        }
         dbRef.child("users").child(Configs.generateEmail(Objects.requireNonNull(Configs.getUser().getEmail()))).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DataSnapshot> task) {
