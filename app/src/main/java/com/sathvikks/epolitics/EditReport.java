@@ -30,72 +30,87 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.google.gson.Gson;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Calendar;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Objects;
 
-public class ReportIssue extends AppCompatActivity {
-    Intent homeIntent;
-    EditText reportIssueDescription;
-    Bitmap selectedImageBitmap, compressedBitMap;
-    ImageView reportIssueImage;
-    Button reportIssueUpload, reportIssueRemove, reportIssueReport;
+public class EditReport extends AppCompatActivity {
+    Boolean pictureChange = false;
+    Intent homeIntent, thisIntent;
+    EditText editReportDescription;
+    Bitmap selectedImageBitmap;
+    ImageView editReportImage;
+    Button editReportEditImage, editReportRemoveImage, editReportEdit;
     ProgressDialog dialog;
     StorageReference storageRef;
     FirebaseUser myUser;
     DatabaseReference dbRef;
     HashMap userObj;
+    Post post;
     ActivityResultLauncher<Intent> launchSomeActivity;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_report_issue);
-        Objects.requireNonNull(getSupportActionBar()).setTitle("Report an Issue");
-        reportIssueDescription = findViewById(R.id.newReportDescription);
-        reportIssueImage = findViewById(R.id.newReportImage);
-        reportIssueUpload = findViewById(R.id.newReportAddImage);
-        reportIssueImage.setVisibility(View.GONE);
+        setContentView(R.layout.activity_edit_report);
+        thisIntent = getIntent();
+        Gson gson = new Gson();
+        post = gson.fromJson(thisIntent.getStringExtra("report"), Post.class);
+        Objects.requireNonNull(getSupportActionBar()).setTitle("Edit issue reported");
+        editReportDescription = findViewById(R.id.editReportDescription);
+        editReportImage = findViewById(R.id.editReportImage);
+        editReportEditImage = findViewById(R.id.editReportEditImage);
+        editReportImage.setVisibility(View.GONE);
         homeIntent = new Intent(getApplicationContext(), MainActivity.class);
-        reportIssueRemove = findViewById(R.id.newReportRemoveImage);
+        editReportRemoveImage = findViewById(R.id.editReportRemoveImage);
         storageRef = Configs.getStorageRef();
         dbRef = Configs.getDbRef();
         myUser = Configs.getUser();
         userObj = Configs.fetchUserInfo(this, false);
-        reportIssueReport = findViewById(R.id.newReport);
-        reportIssueUpload.setOnClickListener(new View.OnClickListener() {
+        editReportEdit = findViewById(R.id.editReportEdit);
+        editReportDescription.setText(post.getPostDescription());
+        try {
+            new URL((String) post.getPostImage()).toURI();
+            editReportImage.setVisibility(View.VISIBLE);
+            Glide.with(EditReport.this)
+                    .load(post.getPostImage())
+                    .into(editReportImage);
+        } catch (Exception ignored) {
+
+        }
+        editReportEditImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 imageChooser();
             }
         });
-        reportIssueRemove.setOnClickListener(new View.OnClickListener() {
+        editReportRemoveImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                reportIssueImage.setImageBitmap(null);
-                reportIssueImage.setVisibility(View.GONE);
+                editReportImage.setImageBitmap(null);
+                editReportImage.setVisibility(View.GONE);
             }
         });
-        reportIssueReport.setOnClickListener(new View.OnClickListener() {
+        editReportEdit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (reportIssueDescription.getText().toString().equals("")) {
-                    Toast.makeText(ReportIssue.this, "Description cannot be empty!", Toast.LENGTH_SHORT).show();
+                if (editReportDescription.getText().toString().equals("")) {
+                    Toast.makeText(EditReport.this, "Description cannot be empty!", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                String postChild = (Calendar.getInstance().getTime().toString()+"myCustomSplit"+myUser.getEmail()).replace(".", ",").replaceAll("\\s", "");
-                if (reportIssueImage.getVisibility() != View.GONE) {
-                    dialog = Configs.showProcessDialogue(ReportIssue.this, "Uploading the image...");
+                String postChild = post.postId;
+                if (editReportImage.getVisibility() != View.GONE && pictureChange) {
+                    dialog = Configs.showProcessDialogue(EditReport.this, "Uploading the image...");
                     dialog.setIndeterminate(false);
                     dialog.setProgress(0);
                     dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
                     dialog.show();
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    compressedBitMap = Configs.getResizedBitmap(selectedImageBitmap, 50);
-                    compressedBitMap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                    selectedImageBitmap = Configs.getResizedBitmap(selectedImageBitmap, 70);
+                    selectedImageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                     byte[] bitmapData = baos.toByteArray();
                     StorageReference ref = storageRef.child("reports/"+userObj.get("region")+"/"+postChild);
                     UploadTask uploadTask = ref.putBytes(bitmapData);
@@ -103,7 +118,7 @@ public class ReportIssue extends AppCompatActivity {
                         @Override
                         public void onFailure(@NonNull Exception e) {
                             dialog.dismiss();
-                            Toast.makeText(ReportIssue.this, "Failed to upload the image", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(EditReport.this, "Failed to upload the image", Toast.LENGTH_SHORT).show();
                         }
                     }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
@@ -124,7 +139,7 @@ public class ReportIssue extends AppCompatActivity {
                         public void onComplete(@NonNull Task<Uri> task) {
                             if (task.isSuccessful()) {
                                 Uri downloadUri = task.getResult();
-                                newReport(postChild, downloadUri.toString());
+                                editPost(postChild, downloadUri.toString());
                             }
                         }
                     });
@@ -137,7 +152,7 @@ public class ReportIssue extends AppCompatActivity {
                     });
                 }
                 else {
-                    newReport(postChild);
+                    editPost(postChild);
                 }
             }
         });
@@ -152,8 +167,9 @@ public class ReportIssue extends AppCompatActivity {
                     catch (IOException e) {
                         e.printStackTrace();
                     }
-                    reportIssueImage.setVisibility(View.VISIBLE);
-                    Glide.with(this).load(selectedImageUri).into(reportIssueImage);
+                    editReportImage.setVisibility(View.VISIBLE);
+                    Glide.with(this).load(selectedImageUri).into(editReportImage);
+                    pictureChange = true;
                 }
             }
         });
@@ -164,47 +180,53 @@ public class ReportIssue extends AppCompatActivity {
         i.setAction(Intent.ACTION_GET_CONTENT);
         launchSomeActivity.launch(i);
     }
-    private void newReport(String postChild, String uri) {
-        dialog = Configs.showProcessDialogue(ReportIssue.this, "Reporting ...");
+    private void editPost(String postChild, String uri) {
+        dialog = Configs.showProcessDialogue(EditReport.this, "Editing ...");
         dialog.show();
-        Post newPost;
-        String newPostDescriptionText;
-        newPostDescriptionText = reportIssueDescription.getText().toString();
-        newPost = new Post(newPostDescriptionText, (String) userObj.get("name"), myUser.getEmail(), uri, postChild);
-        dbRef.child("reports").child((String) Objects.requireNonNull(userObj.get("region"))).child(postChild).setValue(newPost).addOnCompleteListener(new OnCompleteListener<Void>() {
+        Post editPost;
+        String editPostDescriptionText;
+        editPostDescriptionText = editReportDescription.getText().toString();
+        editPost = new Post(editPostDescriptionText, (String) userObj.get("name"), myUser.getEmail(), uri, postChild);
+        editPost.setEdited(true);
+        dbRef.child("reports").child((String) Objects.requireNonNull(userObj.get("region"))).child(postChild).setValue(editPost).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if(!task.isSuccessful()) {
-                    Toast.makeText(ReportIssue.this, "Unable to report issue at the moment", Toast.LENGTH_SHORT).show();
-                    Log.i("sksLog", "add post failure: "+task.getException().toString());
+                    Toast.makeText(EditReport.this, "Unable to edit the issue report ath the moment", Toast.LENGTH_SHORT).show();
+                    Log.i("sksLog", "update issue failure: "+task.getException().toString());
                     dialog.dismiss();
                     return;
                 }
                 dialog.dismiss();
-                Toast.makeText(ReportIssue.this, "Your issue has been reported", Toast.LENGTH_SHORT).show();
+                Toast.makeText(EditReport.this, "The issue report has been updated", Toast.LENGTH_SHORT).show();
                 startActivity(homeIntent);
                 finish();
             }
         });
     }
-    private void newReport(String postChild) {
-        dialog = Configs.showProcessDialogue(ReportIssue.this, "Reporting ...");
+    private void editPost(String postChild) {
+        dialog = Configs.showProcessDialogue(EditReport.this, "Updating the post...");
         dialog.show();
-        Post newPost;
-        String newPostDescriptionText;
-        newPostDescriptionText = reportIssueDescription.getText().toString();
-        newPost = new Post(newPostDescriptionText, (String) userObj.get("name"), myUser.getEmail(), postChild);
-        dbRef.child("reports").child((String) Objects.requireNonNull(userObj.get("region"))).child(postChild).setValue(newPost).addOnCompleteListener(new OnCompleteListener<Void>() {
+        Post editPost;
+        String editPostDescriptionText;
+        editPostDescriptionText = editReportDescription.getText().toString();
+        if (!pictureChange && editReportImage.getVisibility() == View.VISIBLE) {
+            editPost = new Post(editPostDescriptionText, (String) userObj.get("name"), myUser.getEmail(), post.getPostImage() ,postChild);
+        } else {
+            editPost = new Post(editPostDescriptionText, (String) userObj.get("name"), myUser.getEmail(), postChild);
+        }
+        editPost.setEdited(true);
+        dbRef.child("reports").child((String) Objects.requireNonNull(userObj.get("region"))).child(postChild).setValue(editPost).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if(!task.isSuccessful()) {
-                    Toast.makeText(ReportIssue.this, "Unable to report issue at the moment", Toast.LENGTH_SHORT).show();
-                    Log.i("sksLog", "add post failure: "+task.getException().toString());
+                    Toast.makeText(EditReport.this, "Unable to edit the issue report ath the moment", Toast.LENGTH_SHORT).show();
+                    Log.i("sksLog", "update issue failure: "+task.getException().toString());
                     dialog.dismiss();
                     return;
                 }
                 dialog.dismiss();
-                Toast.makeText(ReportIssue.this, "Your issue has been reported", Toast.LENGTH_SHORT).show();
+                Toast.makeText(EditReport.this, "The issue report has been updated", Toast.LENGTH_SHORT).show();
                 startActivity(homeIntent);
                 finish();
             }

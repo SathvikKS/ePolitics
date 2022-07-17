@@ -60,17 +60,17 @@ public class EditPost extends AppCompatActivity {
         Gson gson = new Gson();
         post = gson.fromJson(thisIntent.getStringExtra("post"), Post.class);
         Objects.requireNonNull(getSupportActionBar()).setTitle("Edit Post");
-        editPostDescription = findViewById(R.id.reportIssueDescription);
-        editPostImage = findViewById(R.id.reportIssueImage);
-        editPostUpload = findViewById(R.id.reportIssueUpload);
+        editPostDescription = findViewById(R.id.editPostDescription);
+        editPostImage = findViewById(R.id.editPostImage);
+        editPostUpload = findViewById(R.id.editPostEditImage);
         editPostImage.setVisibility(View.GONE);
         homeIntent = new Intent(getApplicationContext(), MainActivity.class);
-        editPostRemove = findViewById(R.id.reportIssueRemove);
+        editPostRemove = findViewById(R.id.editPostRemoveImage);
         storageRef = Configs.getStorageRef();
         dbRef = Configs.getDbRef();
         myUser = Configs.getUser();
         userObj = Configs.fetchUserInfo(this, false);
-        editPostEdit = findViewById(R.id.reportIssueReport);
+        editPostEdit = findViewById(R.id.editPostEdit);
         editPostDescription.setText(post.getPostDescription());
         try {
             new URL((String) post.getPostImage()).toURI();

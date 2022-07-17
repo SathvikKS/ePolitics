@@ -54,17 +54,17 @@ public class NewPost extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_post);
         Objects.requireNonNull(getSupportActionBar()).setTitle("New Post");
-        newPostDescription = findViewById(R.id.reportIssueDescription);
-        newPostImage = findViewById(R.id.reportIssueImage);
-        newPostUpload = findViewById(R.id.reportIssueUpload);
+        newPostDescription = findViewById(R.id.newPostDescription);
+        newPostImage = findViewById(R.id.newPostImage);
+        newPostUpload = findViewById(R.id.newPostAddImage);
         newPostImage.setVisibility(View.GONE);
         homeIntent = new Intent(getApplicationContext(), MainActivity.class);
-        newPostRemove = findViewById(R.id.reportIssueRemove);
+        newPostRemove = findViewById(R.id.newPostRemoveImage);
         storageRef = Configs.getStorageRef();
         dbRef = Configs.getDbRef();
         myUser = Configs.getUser();
         userObj = Configs.fetchUserInfo(this, false);
-        newPostAddPost = findViewById(R.id.reportIssueReport);
+        newPostAddPost = findViewById(R.id.newPost);
         newPostUpload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

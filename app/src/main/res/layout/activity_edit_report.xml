@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".EditPost">
+    tools:context=".EditReport">
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -25,11 +25,11 @@
                 android:layout_marginEnd="40dp"
                 android:layout_marginBottom="41dp"
                 android:gravity="center_horizontal"
-                android:text="Editing the post"
+                android:text="Editing the Issue reported"
                 android:textSize="34sp" />
 
             <EditText
-                android:id="@+id/editPostDescription"
+                android:id="@+id/editReportDescription"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="40dp"
@@ -43,7 +43,7 @@
                 android:textColorHint="#263238" />
 
             <ImageView
-                android:id="@+id/editPostImage"
+                android:id="@+id/editReportImage"
                 android:layout_width="match_parent"
                 android:layout_height="256dp"
                 android:layout_margin="25dp"
@@ -59,7 +59,7 @@
                 android:orientation="horizontal">
 
                 <Button
-                    android:id="@+id/editPostEditImage"
+                    android:id="@+id/editReportEditImage"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
@@ -67,7 +67,7 @@
                     android:text="Change Image" />
 
                 <Button
-                    android:id="@+id/editPostRemoveImage"
+                    android:id="@+id/editReportRemoveImage"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
@@ -77,13 +77,13 @@
             </LinearLayout>
 
             <Button
-                android:id="@+id/editPostEdit"
+                android:id="@+id/editReportEdit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="40dp"
                 android:layout_marginTop="25dp"
                 android:layout_marginEnd="40dp"
-                android:text="Edit post" />
+                android:text="Edit issue" />
 
         </LinearLayout>
     </ScrollView>
