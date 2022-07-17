@@ -31,6 +31,7 @@ import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
@@ -232,21 +233,28 @@ public class MainActivity extends AppCompatActivity implements PostView {
         if (Configs.getUser() == null ) {
             return;
         }
-        dbRef.child("users").child(Configs.generateEmail(Objects.requireNonNull(Configs.getUser().getEmail()))).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+        ValueEventListener postListener = new ValueEventListener() {
             @Override
-            public void onComplete(@NonNull Task<DataSnapshot> task) {
-                if (task.isSuccessful()) {
-                    HashMap userObj = (HashMap) task.getResult().getValue();
-                    if (userObj.get("profilePicUrl") != null ) {
-                        Glide.with(MainActivity.this)
-                                .load(userObj.get("profilePicUrl"))
-                                .into(navProfilePicture);
-                    }
-                    navProfileName.setText((String) userObj.get("name"));
-                    navProfileRegion.setText((String) userObj.get("region"));
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                HashMap userObj = (HashMap) dataSnapshot.getValue();
+                if (userObj.get("profilePicUrl") != null ) {
+                    Glide.with(MainActivity.this)
+                            .load(userObj.get("profilePicUrl"))
+                            .into(navProfilePicture);
+                } else {
+                    navProfilePicture.setImageBitmap(null);
                 }
+                navProfileName.setText((String) userObj.get("name"));
+                navProfileRegion.setText((String) userObj.get("region"));
             }
-        });
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.w("sksLog", "failed to auto update data: ", databaseError.toException());
+            }
+        };
+        DatabaseReference myRef = dbRef.child("users").child(Configs.generateEmail(Objects.requireNonNull(Configs.getUser().getEmail())));
+        myRef.addValueEventListener(postListener);
     }
 
     public void createPostView(String region) {

@@ -188,6 +188,8 @@ public class MyProfile extends AppCompatActivity {
                             .load(userPicUrl)
                                     .into(profileImage);
             //profileImage.setImageBitmap(profilePicBitmap);
+        } else {
+            Log.i("sksLog", "userpic "+userPicUrl);
         }
         launchSomeActivity =  registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
 
@@ -237,6 +239,7 @@ public class MyProfile extends AppCompatActivity {
                         public void onComplete(@NonNull Task<Uri> task) {
                             if (task.isSuccessful()) {
                                 Uri downloadUri = task.getResult();
+                                Configs.userObj.replace("profilePicUrl", downloadUri.toString());
                                 dbRef.child("users").child(Configs.generateEmail(userEmail)).child("profilePicUrl").setValue(downloadUri.toString());
                             } else {
                             }
