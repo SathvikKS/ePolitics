@@ -35,7 +35,6 @@ import com.google.gson.Gson;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -56,22 +55,22 @@ public class EditPost extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_new_post);
+        setContentView(R.layout.activity_edit_post);
         thisIntent = getIntent();
         Gson gson = new Gson();
         post = gson.fromJson(thisIntent.getStringExtra("post"), Post.class);
         Objects.requireNonNull(getSupportActionBar()).setTitle("Edit Post");
-        editPostDescription = findViewById(R.id.editPostDescription);
-        editPostImage = findViewById(R.id.editPostImage);
-        editPostUpload = findViewById(R.id.editPostUpload);
+        editPostDescription = findViewById(R.id.reportIssueDescription);
+        editPostImage = findViewById(R.id.reportIssueImage);
+        editPostUpload = findViewById(R.id.reportIssueUpload);
         editPostImage.setVisibility(View.GONE);
         homeIntent = new Intent(getApplicationContext(), MainActivity.class);
-        editPostRemove = findViewById(R.id.editPostRemove);
+        editPostRemove = findViewById(R.id.reportIssueRemove);
         storageRef = Configs.getStorageRef();
         dbRef = Configs.getDbRef();
         myUser = Configs.getUser();
         userObj = Configs.fetchUserInfo(this, false);
-        editPostEdit = findViewById(R.id.editPostEdit);
+        editPostEdit = findViewById(R.id.reportIssueReport);
         editPostDescription.setText(post.getPostDescription());
         try {
             new URL((String) post.getPostImage()).toURI();
