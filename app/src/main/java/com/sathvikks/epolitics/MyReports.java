@@ -27,6 +27,7 @@ public class MyReports extends AppCompatActivity implements PostView {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_reports);
+        getSupportActionBar().setTitle("Issues reported by you");
         reports = new ArrayList<>();
         myUser = Configs.getUser();
         userObj = Configs.fetchUserInfo(MyReports.this, false);

@@ -28,6 +28,7 @@ public class AllReports extends AppCompatActivity implements PostView{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_reports);
+        getSupportActionBar().setTitle("Issues reported");
         viewReportIntent = new Intent(getApplicationContext(), ViewPost.class);
         recyclerView = findViewById(R.id.allReports);
         reports = new ArrayList<>();
